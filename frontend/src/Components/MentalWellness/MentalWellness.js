@@ -1,252 +1,187 @@
-import React, { useContext } from 'react'
+import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
 import { InnerLayout } from '../../styles/Layouts';
 import send_icon from '../../img/send_icon.png'
 import user_icon from '../../img/user_icon.png'
-import { Context } from '../../context/Context';
+import { useGlobalContext } from '../../context/Context';
 import DoctorLoader from './DoctorLoader';
 import StethoscopeIcon from './StethoscopeIcon';
 
-function MentalWellness() {
-  const {onSent,recentPrompt,showResult,loading,resultData,setInput,input} = useContext(Context)
+const MentalWellness = () => {
+  const { input, setInput, onSent, recentPrompt, showResult, loading, resultData } = useGlobalContext();
+  const [chatHistory, setChatHistory] = useState([]);
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      onSent();
+      handleSend();
     }
   };
 
   const handleSend = () => {
     if (input.trim()) {
       onSent();
+      setChatHistory([...chatHistory, { type: 'user', content: input }]);
+      setInput('');
     }
   };
 
+  useEffect(() => {
+    if (resultData) {
+      setChatHistory([...chatHistory, { type: 'bot', content: resultData }]);
+    }
+  }, [resultData]);
+
   return (
-    <MentStyled>
-      <InnerLayout className='main'>
-        <div className='nav'>
-          <h2>Mind-Bot</h2>
+    <MentalWellnessStyled>
+      <div className="chat-container">
+        <div className="chat-header">
+          <h2>Mind Bot - Your Mental Wellness Assistant</h2>
         </div>
-        <div className="main-container">
-          {!showResult
-          ?<>
-            <div className='greet'>
-            <p><span>Hi, there!</span></p>
-            <p>How are you feeling today?</p>
-            </div>
-          </>
-          :<div className='result'>
-              <div className='result-title'>
-                <img src={user_icon} alt="User"/>
-                <p>{recentPrompt}</p>
-              </div>
-              <div className='result-data'>
-                <div className="ai-icon">
-                  <StethoscopeIcon />
-                </div>
-                {loading
-                ? <DoctorLoader />
-                : <p dangerouslySetInnerHTML={{__html:resultData}}></p>
-                }
+        <div className="chat-messages">
+          {chatHistory.map((message, index) => (
+            <div key={index} className={`message ${message.type}`}>
+              <div className="message-content">
+                {message.content}
               </div>
             </div>
-          }
-          <div className='main-bottom'>
-            <div className='search-box'>
-              <input 
-                onChange={(e)=>setInput(e.target.value)} 
-                value={input} 
-                type="text" 
-                placeholder='Share your thoughts here'
-                onKeyPress={handleKeyPress}
-              />
-              <div>
-                <img onClick={handleSend} src={send_icon} alt="Send"/>
+          ))}
+          {loading && (
+            <div className="message bot">
+              <div className="message-content loading">
+                <span></span>
+                <span></span>
+                <span></span>
               </div>
             </div>
-            <p className='bottom-info'>
-              Mind-Bot cannot replace professional help. If you need it, it will guide you towards qualified mental health resources.
-            </p>
-          </div>
+          )}
         </div>
-      </InnerLayout>
-    </MentStyled>  
+        <div className="chat-input">
+          <textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Type your message here..."
+            rows="3"
+          />
+          <button onClick={handleSend} disabled={loading}>
+            Send
+          </button>
+        </div>
+      </div>
+    </MentalWellnessStyled>
   )
 }
 
-const MentStyled = styled.nav`
-  .nav h2{
-    color: darkviolet;
-    font-size: 25px;
-    font-weight: 605;
-    margin: 11px 12px;
-  }
-  .main{
-    flex: 1;
-    min-height: 100vh;
-    padding-bottom: 15vh;
-    position: relative;
-  }
+const MentalWellnessStyled = styled.div`
+  padding: 2rem;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
-  .main .nav{
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 22px;
-    padding: 20px;
-  }
-
-  .main-container{
-    max-width: 900px;
-    margin: -15px 88px;
-    color: black;
-  }
-
-  .main .greet{
-    margin: 50px 0px;
-    font-size: 40px;
-    color: #928989;
-    font-weight: 540;
-    padding: 20px;
-  }
-
-  .main .greet span{
-    background: -webkit-linear-gradient(16deg, #4b90ff, #ff5546);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  .main-bottom{
-    position: absolute;
-    bottom: 0;
+  .chat-container {
     width: 100%;
-    max-width: 900px;
-    padding: 0px 20px;
-    margin: 70px -48px;
-  }
-
-  .search-box{
+    max-width: 800px;
+    height: 80vh;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-    background-color: #f0f4f9;
-    margin: 10px 40px;
-    padding: 7px 17px;
-    border-radius: 50px;
+    flex-direction: column;
   }
 
-  .search-box img{
-    width: 24px;
+  .chat-header {
+    padding: 1rem;
+    background: #2c3e50;
+    color: white;
+    border-radius: 10px 10px 0 0;
+    text-align: center;
+  }
+
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+  }
+
+  .message {
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .message.user {
+    align-items: flex-end;
+  }
+
+  .message-content {
+    max-width: 70%;
+    padding: 0.8rem;
+    border-radius: 10px;
+    background: #f0f2f5;
+  }
+
+  .message.user .message-content {
+    background: #2c3e50;
+    color: white;
+  }
+
+  .chat-input {
+    padding: 1rem;
+    border-top: 1px solid #eee;
+    display: flex;
+    gap: 1rem;
+  }
+
+  textarea {
+    flex: 1;
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    resize: none;
+  }
+
+  button {
+    padding: 0.8rem 1.5rem;
+    background: #2c3e50;
+    color: white;
+    border: none;
+    border-radius: 5px;
     cursor: pointer;
-    transition: transform 0.3s ease;
+    transition: background 0.3s ease;
 
     &:hover {
-      transform: scale(1.1);
+      background: #34495e;
+    }
+
+    &:disabled {
+      background: #95a5a6;
+      cursor: not-allowed;
     }
   }
 
-  .search-box input{
-    flex: 1;
-    background: transparent;
-    border: none;
-    outline: none;
-    padding: 12px;
-    font-size: 18px;
-    color: #333;
-
-    &::placeholder {
-      color: #666;
-      opacity: 0.7;
-    }
-  }
-
-  .search-box div{
+  .loading {
     display: flex;
+    gap: 0.5rem;
+    justify-content: center;
     align-items: center;
-    gap: 15px;
   }
 
-  .main .bottom-info{
-    font-size: 13px;
-    margin: 15px;
-    text-align: center;
-    font-style: italic;
-    color: #666;
+  .loading span {
+    width: 8px;
+    height: 8px;
+    background: #2c3e50;
+    border-radius: 50%;
+    animation: bounce 1.4s infinite ease-in-out;
   }
 
-  .result{
-    padding: 0px 5%;
-    max-height: 70vh;
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(147, 51, 234, 0.2) rgba(0, 0, 0, 0.05);
+  .loading span:nth-child(1) { animation-delay: -0.32s; }
+  .loading span:nth-child(2) { animation-delay: -0.16s; }
 
-    &::-webkit-scrollbar {
-      width: 6px;
-    }
-
-    &::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.05);
-      border-radius: 10px;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background-color: rgba(147, 51, 234, 0.2);
-      border-radius: 10px;
-
-      &:hover {
-        background-color: rgba(147, 51, 234, 0.4);
-      }
-    }
-  }
-
-  .result-title{
-    margin: 40px 0px;
-    display: flex;
-    align-items: center;
-    gap: 20px;
-
-    img {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      object-fit: cover;
-      opacity: 0.8;
-      transition: opacity 0.3s ease;
-
-      &:hover {
-        opacity: 1;
-      }
-    }
-
-    p {
-      color: #333;
-      font-weight: 500;
-    }
-  }
-
-  .result-data{
-    display: flex;
-    align-items: start;
-    gap: 20px;
-
-    .ai-icon {
-      width: 40px;
-      height: 40px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    p {
-      font-size: 17px;
-      font-weight: 300;
-      line-height: 1.8;
-      color: #444;
-    }
+  @keyframes bounce {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1); }
   }
 `;
 

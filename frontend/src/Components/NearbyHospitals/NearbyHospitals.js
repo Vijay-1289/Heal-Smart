@@ -499,8 +499,8 @@ function NearbyHospitals() {
                                 </div>
                             </div>
                         </div>
-                    )}
-                </div>
+          )}
+        </div>
       </InnerLayout>
     </HospitalsStyled>
   );
@@ -651,10 +651,10 @@ const HospitalsStyled = styled.div`
     }
 
     .hospitals-grid {
-        display: grid;
+    display: grid;
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 2rem;
-        padding: 1rem;
+    gap: 2rem;
+    padding: 1rem;
         margin-top: 1rem;
         transition: all 0.3s ease;
 
@@ -662,12 +662,12 @@ const HospitalsStyled = styled.div`
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             margin-right: 400px;
         }
-    }
+  }
 
-    .hospital-card {
+  .hospital-card {
         background: white;
         border-radius: 12px;
-        padding: 1.5rem;
+    padding: 1.5rem;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         transition: all 0.3s ease;
         height: fit-content;
@@ -686,21 +686,21 @@ const HospitalsStyled = styled.div`
 
         &::-webkit-scrollbar-thumb {
             background: rgba(147, 51, 234, 0.2);
-            border-radius: 10px;
+    border-radius: 10px;
 
             &:hover {
                 background: rgba(147, 51, 234, 0.4);
             }
         }
 
-        &:hover {
+    &:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-        }
+    }
 
         .card-header {
-            display: flex;
-            justify-content: space-between;
+      display: flex;
+      justify-content: space-between;
             align-items: start;
             margin-bottom: 1rem;
             position: sticky;
@@ -712,13 +712,13 @@ const HospitalsStyled = styled.div`
             h3 {
                 color: #333;
                 font-size: 1.25rem;
-                margin: 0;
+        margin: 0;
                 line-height: 1.4;
-            }
+      }
 
-            .distance {
+      .distance {
                 background: #9333ea;
-                color: white;
+        color: white;
                 padding: 0.25rem 0.5rem;
                 border-radius: 20px;
                 font-size: 0.875rem;
@@ -726,7 +726,7 @@ const HospitalsStyled = styled.div`
         }
 
         .info-row {
-            display: flex;
+      display: flex;
             align-items: start;
             gap: 0.75rem;
             margin-bottom: 0.75rem;
@@ -753,7 +753,7 @@ const HospitalsStyled = styled.div`
                 }
 
                 p {
-                    color: #666;
+      color: #666;
                     font-size: 0.95rem;
                     line-height: 1.5;
                     margin: 0;
@@ -764,20 +764,20 @@ const HospitalsStyled = styled.div`
                 color: #666;
                 font-size: 0.95rem;
                 line-height: 1.5;
-                margin: 0;
-            }
-        }
+        margin: 0;
+      }
+    }
 
         .features {
-            display: flex;
+      display: flex;
             flex-wrap: wrap;
-            gap: 1rem;
+      gap: 1rem;
             margin: 1rem 0;
 
             .feature {
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
                 font-size: 0.875rem;
                 color: #666;
 
@@ -839,7 +839,7 @@ const HospitalsStyled = styled.div`
             bottom: 0;
             margin-top: 1rem;
 
-            &:hover {
+        &:hover {
                 background: #7e22ce;
             }
         }
@@ -885,7 +885,7 @@ const HospitalsStyled = styled.div`
                 padding: 0.5rem;
                 display: flex;
                 align-items: center;
-                justify-content: center;
+        justify-content: center;
                 transition: all 0.3s ease;
 
                 &:hover {
@@ -919,7 +919,7 @@ const HospitalsStyled = styled.div`
         }
     }
 
-    @media (max-width: 768px) {
+  @media (max-width: 768px) {
         .filters {
             .filter-group {
                 flex-direction: column;
@@ -932,7 +932,7 @@ const HospitalsStyled = styled.div`
         }
 
         .hospitals-grid {
-            grid-template-columns: 1fr;
+      grid-template-columns: 1fr;
             padding: 0.5rem;
         }
     }
@@ -945,8 +945,8 @@ const HospitalsStyled = styled.div`
         .directions-overlay {
             width: 100%;
             max-width: none;
-        }
     }
+  }
 `;
 
 export default NearbyHospitals; 

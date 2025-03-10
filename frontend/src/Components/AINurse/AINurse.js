@@ -5,6 +5,7 @@ import { FaMicrophone, FaStop } from 'react-icons/fa';
 import NurseAvatar from './NurseAvatar';
 import PatientDashboard from '../Dashboard/PatientDashboard';
 import { useNavigate } from 'react-router-dom';
+import { useGlobalContext } from '../../context/Context';
 
 // Initial medical knowledge base
 let medicalKnowledge = {
@@ -171,6 +172,8 @@ ${fdaData.contraindications ? fdaData.contraindications.join('\n') : 'No contrai
 };
 
 function AINurse() {
+    const { input, setInput, onSent, loading, resultData } = useGlobalContext();
+    const [chatHistory, setChatHistory] = useState([]);
     const [isListening, setIsListening] = useState(false);
     const [spokenResponse, setSpokenResponse] = useState('');
     const [isAvatarSpeaking, setIsAvatarSpeaking] = useState(false);
@@ -362,6 +365,21 @@ Available conditions:
         speak(randomGreeting);
     }, [speak]);
 
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSend();
+        }
+    };
+
+    const handleSend = () => {
+        if (input.trim()) {
+            onSent();
+            setChatHistory([...chatHistory, { type: 'user', content: input }]);
+            setInput('');
+        }
+    };
+
     return (
         <AINurseStyled isAvatarSpeaking={isAvatarSpeaking}>
             <InnerLayout>
@@ -388,25 +406,68 @@ Available conditions:
                     </div>
 
                     <div className="nurse-container">
-                        {currentCondition && (
-                            <div className="current-condition">
-                                Currently discussing: {currentCondition}
-                            </div>
-                        )}
-                        <div className="avatar-container">
-                            <NurseAvatar 
-                                isSpeaking={isAvatarSpeaking} 
-                                isListening={isListening}
-                            />
+                        <div className="nurse-header">
+                            <h2>AI Nurse Assistant</h2>
+                            <p>Your 24/7 healthcare companion</p>
                         </div>
-                        <div className="spoken-text monospace">{spokenResponse}</div>
-                        <button 
-                            className={`voice-button ${isListening ? 'listening' : ''}`}
-                            onClick={toggleListening}
-                        >
-                            {isListening ? <FaStop /> : <FaMicrophone />}
-                            <span>{isListening ? 'Listening...' : 'Start Speaking'}</span>
-                        </button>
+                        
+                        <div className="nurse-content">
+                            <div className="nurse-info">
+                                <div className="info-section">
+                                    <h3>Available Services</h3>
+                                    <ul>
+                                        <li>Health advice and guidance</li>
+                                        <li>Medication information</li>
+                                        <li>First aid instructions</li>
+                                        <li>General health tips</li>
+                                        <li>Emergency guidance</li>
+                                    </ul>
+                                </div>
+                                
+                                <div className="info-section">
+                                    <h3>Important Notes</h3>
+                                    <ul>
+                                        <li>This is an AI assistant, not a replacement for professional medical care</li>
+                                        <li>For emergencies, call emergency services immediately</li>
+                                        <li>Always consult healthcare providers for medical decisions</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div className="chat-section">
+                                <div className="chat-messages">
+                                    {chatHistory.map((message, index) => (
+                                        <div key={index} className={`message ${message.type}`}>
+                                            <div className="message-content">
+                                                {message.content}
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {loading && (
+                                        <div className="message bot">
+                                            <div className="message-content loading">
+                                                <span></span>
+                                                <span></span>
+                                                <span></span>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                                
+                                <div className="chat-input">
+                                    <textarea
+                                        value={input}
+                                        onChange={(e) => setInput(e.target.value)}
+                                        onKeyPress={handleKeyPress}
+                                        placeholder="Ask your health-related question..."
+                                        rows="3"
+                                    />
+                                    <button onClick={handleSend} disabled={loading}>
+                                        Send
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </InnerLayout>
@@ -536,99 +597,159 @@ const AINurseStyled = styled.div`
         padding: 2rem;
     }
 
-    .avatar-section {
+    .nurse-header {
+        padding: 1.5rem;
+        background: #2c3e50;
+        color: white;
+        border-radius: 10px 10px 0 0;
+        text-align: center;
+
+        h2 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        p {
+            margin: 0.5rem 0 0;
+            opacity: 0.9;
+        }
+    }
+
+    .nurse-content {
+        flex: 1;
         display: flex;
-        flex-direction: column;
-        align-items: center;
+        padding: 1.5rem;
         gap: 2rem;
-        padding: 2rem;
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        width: 100%;
-        max-width: 800px;
+        overflow: hidden;
+    }
 
-        .current-condition {
-            font-weight: 500;
-            color: #6b21a8;
-            font-size: 1.1rem;
-            padding: 0.5rem 1.5rem;
-            background: #f3e8ff;
-            border-radius: 50px;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
+    .nurse-info {
+        width: 300px;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        overflow-y: auto;
 
-        .avatar-container {
-            position: relative;
-            width: 100%;
-            max-width: 400px;
-            aspect-ratio: 1;
-            border-radius: 12px;
-            overflow: hidden;
-            background: #f3e8ff;
-        }
+        .info-section {
+            margin-bottom: 1.5rem;
 
-        .spoken-text {
-            text-align: left;
-            font-family: 'Courier New', monospace;
-            font-size: 1rem;
-            line-height: 1.6;
-            color: #333;
-            min-height: 60px;
-            padding: 2rem;
-            background: #f3e8ff;
-            border-radius: 12px;
-            width: 100%;
-            max-width: 600px;
-            white-space: pre-line;
-            overflow-x: auto;
-        }
-
-        .voice-button {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 1rem 2rem;
-            border: none;
-            border-radius: 50px;
-            background: #9333ea;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-
-            &.listening {
-                background: #ef4444;
-                animation: pulse 1.5s infinite;
-            }
-
-            svg {
+            h3 {
+                color: #2c3e50;
+                margin-bottom: 0.8rem;
                 font-size: 1.2rem;
             }
 
-            span {
-                font-size: 1rem;
-                font-weight: 500;
-            }
+            ul {
+                list-style: none;
+                padding: 0;
+                margin: 0;
 
-            &:hover {
-                transform: scale(1.05);
+                li {
+                    padding: 0.5rem 0;
+                    color: #666;
+                    font-size: 0.9rem;
+                    border-bottom: 1px solid #eee;
+
+                    &:last-child {
+                        border-bottom: none;
+                    }
+                }
             }
         }
     }
 
-    @keyframes pulse {
-        0% {
-            transform: scale(1);
+    .chat-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background: white;
+        border-radius: 8px;
+        border: 1px solid #eee;
+    }
+
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem;
+    }
+
+    .message {
+        margin-bottom: 1rem;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .message.user {
+        align-items: flex-end;
+    }
+
+    .message-content {
+        max-width: 70%;
+        padding: 0.8rem;
+        border-radius: 10px;
+        background: #f0f2f5;
+    }
+
+    .message.user .message-content {
+        background: #2c3e50;
+        color: white;
+    }
+
+    .chat-input {
+        padding: 1rem;
+        border-top: 1px solid #eee;
+        display: flex;
+        gap: 1rem;
+    }
+
+    textarea {
+        flex: 1;
+        padding: 0.8rem;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        resize: none;
+    }
+
+    button {
+        padding: 0.8rem 1.5rem;
+        background: #2c3e50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+
+        &:hover {
+            background: #34495e;
         }
-        50% {
-            transform: scale(1.05);
+
+        &:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
         }
-        100% {
-            transform: scale(1);
-        }
+    }
+
+    .loading {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .loading span {
+        width: 8px;
+        height: 8px;
+        background: #2c3e50;
+        border-radius: 50%;
+        animation: bounce 1.4s infinite ease-in-out;
+    }
+
+    .loading span:nth-child(1) { animation-delay: -0.32s; }
+    .loading span:nth-child(2) { animation-delay: -0.16s; }
+
+    @keyframes bounce {
+        0%, 80%, 100% { transform: scale(0); }
+        40% { transform: scale(1); }
     }
 
     @media (max-width: 768px) {
@@ -636,32 +757,14 @@ const AINurseStyled = styled.div`
             padding: 1rem;
         }
 
-        .avatar-section {
-            padding: 1rem;
-
-            .avatar-container {
-                max-width: 300px;
-            }
-
-            .spoken-text {
-                font-size: 1rem;
-            }
-
-            .voice-button {
-                padding: 0.8rem 1.5rem;
-                
-                span {
-                    font-size: 0.9rem;
-                }
-            }
+        .nurse-info {
+            width: 100%;
         }
     }
 
     @media (max-width: 480px) {
-        .avatar-section {
-            .avatar-container {
-                max-width: 250px;
-            }
+        .nurse-info {
+            width: 100%;
         }
     }
 `;

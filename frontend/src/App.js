@@ -5,7 +5,6 @@ import { MainLayout } from "./styles/Layouts";
 import Navigation from "./Components/Navigation/Navigation";
 import Home from "./Components/Home/Home";
 import MentalWellness from "./Components/MentalWellness/MentalWellness";
-import SymptomAnalysis from "./Components/SymptomAnalysis/SymptomAnalysis";
 import ConsultDoctor from "./Components/ConsultDoctor/ConsultDoctor";
 import NearbyHospitals from './Components/NearbyHospitals/NearbyHospitals';
 import DoctorDashboard from './Components/DoctorDashboard/DoctorDashboard';
@@ -41,11 +40,6 @@ function App() {
                             <Route path="/login" element={<Login />} />
                             
                             {/* Protected Routes */}
-                            <Route path="/symptom-analysis" element={
-                                <ProtectedRoute>
-                                    <SymptomAnalysis />
-                                </ProtectedRoute>
-                            } />
                             <Route path="/mental-wellness" element={
                                 <ProtectedRoute>
                                     <MentalWellness />

@@ -1,58 +1,70 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, useContext, useState } from 'react';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-export const Context = createContext();
+const Context = createContext();
+
+export const useGlobalContext = () => {
+    return useContext(Context);
+};
 
 const ContextProvider = ({ children }) => {
-    const [input, setInput] = useState("");
-    const [recentPrompt, setRecentPrompt] = useState("");
+    const [input, setInput] = useState('');
+    const [recentPrompt, setRecentPrompt] = useState('');
     const [showResult, setShowResult] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [resultData, setResultData] = useState("");
+    const [resultData, setResultData] = useState('');
+
+    const genAI = new GoogleGenerativeAI('AIzaSyCu-RVi6xqkAMW9tvycx6CWeaaIC3uwZpg');
 
     const onSent = async () => {
-        if (input.trim() === "") return;
+        if (!input.trim()) return;
 
         setLoading(true);
-        setShowResult(true);
         setRecentPrompt(input);
+        setShowResult(true);
 
         try {
-            const response = await fetch('http://localhost:5000/api/mental-wellness/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify({ message: input })
-            });
+            const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+            const prompt = `You are a supportive mental wellness assistant. Provide empathetic, helpful responses while maintaining appropriate boundaries. Focus on:
+            1. Active listening and validation
+            2. Practical coping strategies
+            3. Encouragement for seeking professional help when needed
+            4. General wellness advice
+            5. Stress management techniques
+            
+            User message: ${input}`;
 
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            const text = response.text();
+            
+            // Format the response with line breaks and emphasis
+            const formattedText = text
+                .split('\n')
+                .map(line => line.trim())
+                .filter(line => line)
+                .map(line => `<p>${line}</p>`)
+                .join('');
 
-            const data = await response.json();
-            setResultData(data.response);
+            setResultData(formattedText);
         } catch (error) {
-            console.error('Error:', error);
-            setResultData("I apologize, but I'm having trouble processing your request right now. Please try again later.");
+            console.error('Error generating response:', error);
+            setResultData('I apologize, but I encountered an error. Please try again or seek professional help if you need immediate assistance.');
         } finally {
             setLoading(false);
-            setInput("");
         }
     };
 
-    const contextValue = {
-        input,
-        setInput,
-        recentPrompt,
-        showResult,
-        loading,
-        resultData,
-        onSent
-    };
-
     return (
-        <Context.Provider value={contextValue}>
+        <Context.Provider value={{
+            input,
+            setInput,
+            onSent,
+            recentPrompt,
+            showResult,
+            loading,
+            resultData
+        }}>
             {children}
         </Context.Provider>
     );
