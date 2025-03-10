@@ -10,10 +10,10 @@ services:
       - key: MONGODB_URI
         sync: false
       - key: GOOGLE_CLIENT_ID
-        sync: false
+        value: 246049626035-uhst0uqgq7p7nt84f6idr1171nif77b8.apps.googleusercontent.com
       - key: GOOGLE_CLIENT_SECRET
         sync: false
       - key: JWT_SECRET
-        sync: false
+        value: heal-smart-jwt-secret-key-2024
       - key: GOOGLE_AI_KEY
-        sync: false 
+        value: AIzaSyANSiPoBX4gzgk9JyNqF_GUjt4ZzNyvHgw 
