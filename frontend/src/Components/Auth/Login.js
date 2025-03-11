@@ -60,6 +60,7 @@ function Login() {
 
             script.onload = () => {
                 if (window.google) {
+                    console.log('Initializing Google Sign-In with origin:', window.location.origin);
                     window.google.accounts.id.initialize({
                         client_id: CLIENT_ID,
                         callback: handleGoogleSuccess,
@@ -68,6 +69,7 @@ function Login() {
                         scope: 'email profile'
                     });
 
+                    console.log('Rendering Google Sign-In button');
                     window.google.accounts.id.renderButton(
                         document.getElementById("googleSignIn"),
                         {
