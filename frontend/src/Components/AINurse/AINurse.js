@@ -114,15 +114,18 @@ function AINurse() {
             <div className="nurse-container">
                 <div className="avatar-section">
                     <model-viewer
-                        src="/nurse-avatar.glb"
+                        src="https://modelviewer.dev/shared-assets/models/Nurse.glb"
                         alt="3D AI Nurse Avatar"
                         auto-rotate
                         camera-controls
-                        ar
-                        shadow-intensity="1"
+                        disable-zoom
+                        camera-orbit="0deg 75deg 105%"
+                        min-camera-orbit="auto 0deg auto"
+                        max-camera-orbit="auto 180deg auto"
                         environment-image="neutral"
+                        shadow-intensity="1"
                         exposure="1"
-                        style={{ width: '100%', height: '400px' }}
+                        style={{ width: '100%', height: '400px', background: '#2d3748' }}
                     ></model-viewer>
                 </div>
                 <div className="interaction-section">
