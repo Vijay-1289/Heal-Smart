@@ -125,7 +125,7 @@ function Login() {
                 </div>
                 <div className="right-side">
                     <div className="login-content">
-                        <h1>Welcome to Health Smart</h1>
+                        <h1>Welcome to Heal Smart</h1>
                         <p className="subtitle">Your Personal Health Assistant</p>
                         
                         <div className="features">
