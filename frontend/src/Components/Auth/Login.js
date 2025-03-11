@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import { toast } from 'react-toastify';
 import doctorImg from '../../img/doctor.png';
 
-const CLIENT_ID = "246049626035-uhst0uqgq7p7nt84f6idr1171nif77b8.apps.googleusercontent.com";
+const CLIENT_ID = "716171060715-uhqjdilis0d35u3ivbfgbn80mvf4q1qi.apps.googleusercontent.com";
 
 function Login() {
     const navigate = useNavigate();
@@ -66,7 +66,6 @@ function Login() {
                         auto_select: false,
                         cancel_on_tap_outside: true,
                         ux_mode: 'popup',
-                        hosted_domain: 'localhost:3000',
                         scope: 'email profile'
                     });
 
