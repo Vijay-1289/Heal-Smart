@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import { FaStethoscope } from 'react-icons/fa';
+import { FaStethoscope, FaSpinner } from 'react-icons/fa';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import doctorThinking from '../../img/doctor-thinking.gif';
 
 function MindBot() {
     const [input, setInput] = useState('');
@@ -92,7 +91,7 @@ function MindBot() {
                     {loading && (
                         <div className="message bot">
                             <div className="message-content loading">
-                                <img src={doctorThinking} alt="Doctor thinking" className="thinking-animation" />
+                                <FaSpinner className="spinner" />
                                 <p>Analyzing your request...</p>
                             </div>
                         </div>
@@ -200,10 +199,9 @@ const MindBotStyled = styled.div`
                     align-items: center;
                     gap: 1rem;
 
-                    .thinking-animation {
-                        width: 100px;
-                        height: 100px;
-                        object-fit: cover;
+                    .spinner {
+                        font-size: 2rem;
+                        animation: spin 1s linear infinite;
                     }
 
                     p {
@@ -250,7 +248,7 @@ const MindBotStyled = styled.div`
         }
 
         button {
-            padding: 0.75rem 2rem;
+            padding: 0.75rem 1.5rem;
             background: #2d3748;
             color: white;
             border: none;
@@ -260,7 +258,7 @@ const MindBotStyled = styled.div`
             transition: background-color 0.2s;
 
             &:hover:not(:disabled) {
-                background: #1f2937;
+                background: #1a202c;
             }
 
             &:disabled {
@@ -270,25 +268,24 @@ const MindBotStyled = styled.div`
         }
     }
 
-    @media (max-width: 640px) {
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @media (max-width: 768px) {
         padding: 1rem;
 
         .chat-container {
             min-height: calc(100vh - 2rem);
-            border-radius: 8px;
-        }
-
-        .header {
-            padding: 0.75rem 1rem;
-            font-size: 1.1rem;
         }
 
         .messages {
             padding: 1rem;
-
-            .message .message-content {
-                max-width: 90%;
-            }
         }
 
         .input-section {
