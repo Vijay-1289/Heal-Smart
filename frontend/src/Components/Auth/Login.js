@@ -66,7 +66,8 @@ function Login() {
                         auto_select: false,
                         cancel_on_tap_outside: true,
                         ux_mode: 'popup',
-                        scope: 'email profile'
+                        scope: 'email profile',
+                        redirect_uri: window.location.origin
                     });
 
                     window.google.accounts.id.renderButton(
