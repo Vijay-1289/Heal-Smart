@@ -3,12 +3,12 @@ import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { FaMicrophone, FaMicrophoneSlash } from 'react-icons/fa';
-import '@google/model-viewer';
 
 function AINurse() {
     const [messages, setMessages] = useState([]);
     const [isListening, setIsListening] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [modelLoaded, setModelLoaded] = useState(false);
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
     const recognition = useRef(null);
@@ -21,6 +21,13 @@ function AINurse() {
         } else {
             setUser(JSON.parse(userData));
         }
+
+        // Load model-viewer script dynamically
+        const script = document.createElement('script');
+        script.type = 'module';
+        script.src = 'https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js';
+        script.onload = () => setModelLoaded(true);
+        document.head.appendChild(script);
 
         // Initialize Web Speech API
         if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
@@ -48,6 +55,8 @@ function AINurse() {
             if (recognition.current) {
                 recognition.current.abort();
             }
+            // Clean up script
+            document.head.removeChild(script);
         };
     }, [navigate]);
 
@@ -113,20 +122,27 @@ function AINurse() {
         <AINurseStyled>
             <div className="nurse-container">
                 <div className="avatar-section">
-                    <model-viewer
-                        src="https://modelviewer.dev/shared-assets/models/Nurse.glb"
-                        alt="3D AI Nurse Avatar"
-                        auto-rotate
-                        camera-controls
-                        disable-zoom
-                        camera-orbit="0deg 75deg 105%"
-                        min-camera-orbit="auto 0deg auto"
-                        max-camera-orbit="auto 180deg auto"
-                        environment-image="neutral"
-                        shadow-intensity="1"
-                        exposure="1"
-                        style={{ width: '100%', height: '400px', background: '#2d3748' }}
-                    ></model-viewer>
+                    {modelLoaded ? (
+                        <model-viewer
+                            src="https://cdn.glitch.global/b99994c4-94f9-4472-9962-6c4b54f39403/nurse-avatar.glb"
+                            alt="3D AI Nurse Avatar"
+                            auto-rotate
+                            camera-controls
+                            disable-zoom
+                            camera-orbit="0deg 75deg 105%"
+                            min-camera-orbit="auto 0deg auto"
+                            max-camera-orbit="auto 180deg auto"
+                            environment-image="neutral"
+                            shadow-intensity="1"
+                            exposure="1"
+                            style={{ width: '100%', height: '400px', background: '#2d3748' }}
+                        ></model-viewer>
+                    ) : (
+                        <div className="loading-avatar">
+                            <div className="spinner"></div>
+                            <p>Loading 3D Avatar...</p>
+                        </div>
+                    )}
                 </div>
                 <div className="interaction-section">
                     <div className="messages">
@@ -177,6 +193,35 @@ const AINurseStyled = styled.div`
         background: #2d3748;
         padding: 2rem;
         border-bottom: 1px solid #e5e7eb;
+        min-height: 400px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        .loading-avatar {
+            text-align: center;
+            color: white;
+
+            .spinner {
+                width: 50px;
+                height: 50px;
+                border: 5px solid #f3f3f3;
+                border-top: 5px solid #9333ea;
+                border-radius: 50%;
+                margin: 0 auto 1rem;
+                animation: spin 1s linear infinite;
+            }
+
+            p {
+                margin: 0;
+                font-size: 1.1rem;
+            }
+        }
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
     }
 
     .interaction-section {
