@@ -13,12 +13,17 @@ function Login() {
         const handleGoogleSuccess = async (response) => {
             try {
                 console.log('Google response:', response);
-                const backendUrl = 'https://heal-smart-backend.onrender.com'; // Update this with your deployed backend URL
+                const backendUrl = 'https://heal-smart-backend.onrender.com';
+                console.log('Attempting to connect to:', backendUrl);
+                
                 const res = await fetch(`${backendUrl}/api/auth/google`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Origin': 'https://heal-smart-heal.netlify.app'
                     },
+                    credentials: 'include',
                     body: JSON.stringify({
                         credential: response.credential,
                     }),
@@ -26,8 +31,12 @@ function Login() {
 
                 if (!res.ok) {
                     const errorData = await res.json().catch(() => ({}));
-                    console.error('Server response:', errorData);
-                    throw new Error(errorData.message || 'Network response was not ok');
+                    console.error('Server error response:', {
+                        status: res.status,
+                        statusText: res.statusText,
+                        error: errorData
+                    });
+                    throw new Error(errorData.message || `Server error: ${res.status}`);
                 }
 
                 const data = await res.json();
@@ -39,11 +48,15 @@ function Login() {
                     toast.success('Login successful!');
                     navigate('/dashboard');
                 } else {
-                    throw new Error('No token received');
+                    throw new Error('No token received from server');
                 }
             } catch (error) {
                 console.error('Login failed:', error);
-                toast.error(`Login failed: ${error.message || 'Please try again.'}`);
+                if (error.message === 'Failed to fetch') {
+                    toast.error('Unable to connect to the server. Please try again later.');
+                } else {
+                    toast.error(`Login failed: ${error.message || 'Please try again.'}`);
+                }
             }
         };
 
