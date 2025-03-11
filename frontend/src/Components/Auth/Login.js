@@ -13,7 +13,8 @@ function Login() {
         const handleGoogleSuccess = async (response) => {
             try {
                 console.log('Google response:', response);
-                const res = await fetch('http://localhost:5000/api/auth/google', {
+                const backendUrl = 'https://heal-smart-backend.onrender.com'; // Update this with your deployed backend URL
+                const res = await fetch(`${backendUrl}/api/auth/google`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -24,10 +25,13 @@ function Login() {
                 });
 
                 if (!res.ok) {
-                    throw new Error('Network response was not ok');
+                    const errorData = await res.json().catch(() => ({}));
+                    console.error('Server response:', errorData);
+                    throw new Error(errorData.message || 'Network response was not ok');
                 }
 
                 const data = await res.json();
+                console.log('Login response:', data);
                 
                 if (data.token) {
                     localStorage.setItem('token', data.token);
@@ -39,7 +43,7 @@ function Login() {
                 }
             } catch (error) {
                 console.error('Login failed:', error);
-                toast.error('Login failed. Please try again.');
+                toast.error(`Login failed: ${error.message || 'Please try again.'}`);
             }
         };
 
