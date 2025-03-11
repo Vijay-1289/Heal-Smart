@@ -70,7 +70,8 @@ function Login() {
                         callback: handleGoogleSuccess,
                         auto_select: false,
                         cancel_on_tap_outside: true,
-                        scope: 'email profile'
+                        scope: 'email profile',
+                        redirect_uri: 'https://heal-smart-heal.netlify.app'
                     });
 
                     console.log('Rendering Google Sign-In button');
