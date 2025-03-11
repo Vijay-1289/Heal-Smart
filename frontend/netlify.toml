@@ -1,6 +1,7 @@
 [build]
-  command = "npm run build"
+  command = "CI=false npm run build"
   publish = "build"
+  base = "frontend"
 
 [[redirects]]
   from = "/*"
@@ -10,6 +11,7 @@
 [build.environment]
   NODE_VERSION = "18"
   CI = "false"
+  NPM_FLAGS = "--no-audit --no-fund"
 
 [[headers]]
   for = "/*"
@@ -18,4 +20,4 @@
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
-    Content-Security-Policy = "default-src 'self' https://*.googleapis.com https://*.google.com https://*.gstatic.com https://*.did.com https://*.render.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googleapis.com https://*.google.com; style-src 'self' 'unsafe-inline' https://*.googleapis.com; img-src 'self' data: https://*.googleapis.com https://*.google.com https://*.gstatic.com https://*.did.com; connect-src 'self' https://*.googleapis.com https://*.render.com;" 
+    Content-Security-Policy = "default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googleapis.com https://*.google.com https://*.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://*.googleapis.com https://*.google.com https://*.gstatic.com https://*.did.com https://*.render.com ws: wss:;" 
