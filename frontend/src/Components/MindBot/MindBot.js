@@ -2,25 +2,28 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { useNavigate } from 'react-router-dom';
+import { IoSend } from 'react-icons/io5';
 
 function MindBot() {
-    const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
+    const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [user, setUser] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
         const userData = localStorage.getItem('user');
-        if (userData) {
-            setUser(JSON.parse(userData));
-            // Add welcome message
-            setMessages([{
-                type: 'bot',
-                content: "Hello! I'm your mental health companion. How are you feeling today?"
-            }]);
-        } else {
+        if (!userData) {
             navigate('/');
+        } else {
+            setMessages([
+                {
+                    type: 'bot',
+                    content: {
+                        greeting: 'Hi, there!',
+                        question: 'How are you feeling today?'
+                    }
+                }
+            ]);
         }
     }, [navigate]);
 
@@ -45,7 +48,8 @@ function MindBot() {
                           1. Validate their feelings
                           2. Offer constructive suggestions
                           3. Encourage professional help when appropriate
-                          4. Maintain a supportive and understanding tone`;
+                          4. Maintain a supportive and understanding tone
+                          Keep responses concise and conversational.`;
 
             const result = await model.generateContent(prompt);
             const response = await result.response;
@@ -75,41 +79,23 @@ function MindBot() {
     return (
         <MindBotStyled>
             <div className="chat-container">
-                <div className="chat-header">
-                    <div className="user-info">
-                        <img src={user?.picture} alt={user?.name} className="user-avatar" />
-                        <span>{user?.name}</span>
-                    </div>
-                    <div className="actions">
-                        <button onClick={() => navigate('/dashboard')} className="dashboard-btn">
-                            Dashboard
-                        </button>
-                        <button 
-                            onClick={() => {
-                                localStorage.clear();
-                                navigate('/');
-                            }} 
-                            className="logout-btn"
-                        >
-                            Logout
-                        </button>
-                    </div>
-                </div>
-
-                <div className="messages-container">
+                <h1>Mind-Bot</h1>
+                <div className="messages">
                     {messages.map((message, index) => (
-                        <div 
-                            key={index} 
-                            className={`message ${message.type}`}
-                        >
-                            <div className="message-content">
-                                {message.content}
-                            </div>
+                        <div key={index} className={`message ${message.type}`}>
+                            {message.type === 'bot' && typeof message.content === 'object' ? (
+                                <>
+                                    <div className="greeting">{message.content.greeting}</div>
+                                    <div className="question">{message.content.question}</div>
+                                </>
+                            ) : (
+                                <div className="text">{message.content}</div>
+                            )}
                         </div>
                     ))}
                     {loading && (
                         <div className="message bot">
-                            <div className="message-content typing">
+                            <div className="typing-indicator">
                                 <span></span>
                                 <span></span>
                                 <span></span>
@@ -117,21 +103,24 @@ function MindBot() {
                         </div>
                     )}
                 </div>
-
                 <div className="input-container">
-                    <textarea
+                    <input
+                        type="text"
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         onKeyPress={handleKeyPress}
-                        placeholder="Type your message here..."
-                        rows="3"
+                        placeholder="Share your thoughts here"
                     />
                     <button 
                         onClick={handleSend}
                         disabled={!input.trim() || loading}
+                        className="send-button"
                     >
-                        Send
+                        <IoSend />
                     </button>
+                </div>
+                <div className="disclaimer">
+                    Mind-Bot cannot replace professional help. If you need it, it will guide you towards qualified mental health resources.
                 </div>
             </div>
         </MindBotStyled>
@@ -143,114 +132,62 @@ const MindBotStyled = styled.div`
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    padding: 2rem;
-    background: #f7fafc;
+    background: #f3e8ff;
+    padding: 1rem;
 
     .chat-container {
         width: 100%;
         max-width: 800px;
-        height: 80vh;
-        background: white;
-        border-radius: 16px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        min-height: 600px;
         display: flex;
         flex-direction: column;
-    }
+        position: relative;
+        padding: 2rem;
 
-    .chat-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 1rem 1.5rem;
-        border-bottom: 1px solid #e2e8f0;
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-
-            .user-avatar {
-                width: 40px;
-                height: 40px;
-                border-radius: 50%;
-            }
-
-            span {
-                font-weight: 500;
-                color: #2d3748;
-            }
+        h1 {
+            color: #9333ea;
+            margin: 0 0 2rem;
+            font-size: 2rem;
+            font-weight: 600;
         }
 
-        .actions {
-            display: flex;
-            gap: 1rem;
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 2rem;
+            padding: 1rem 0;
 
-            button {
-                padding: 0.5rem 1rem;
-                border: none;
-                border-radius: 6px;
-                cursor: pointer;
-                transition: all 0.3s ease;
+            .message {
+                margin-bottom: 1.5rem;
 
-                &.dashboard-btn {
-                    background: #9333ea;
-                    color: white;
+                &.bot {
+                    .greeting {
+                        font-size: 2.5rem;
+                        color: #3b82f6;
+                        margin-bottom: 0.5rem;
+                    }
 
-                    &:hover {
-                        background: #7e22ce;
+                    .question {
+                        font-size: 2rem;
+                        color: #6b7280;
+                    }
+
+                    .text {
+                        font-size: 1.1rem;
+                        color: #4b5563;
+                        line-height: 1.6;
                     }
                 }
 
-                &.logout-btn {
-                    background: #ef4444;
-                    color: white;
-
-                    &:hover {
-                        background: #dc2626;
-                    }
+                &.user .text {
+                    color: #1f2937;
+                    font-size: 1.1rem;
                 }
-            }
-        }
-    }
 
-    .messages-container {
-        flex: 1;
-        overflow-y: auto;
-        padding: 1.5rem;
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-
-        .message {
-            display: flex;
-            margin-bottom: 1rem;
-
-            &.user {
-                justify-content: flex-end;
-
-                .message-content {
-                    background: #9333ea;
-                    color: white;
-                    border-radius: 16px 16px 0 16px;
-                }
-            }
-
-            &.bot .message-content {
-                background: #f3f4f6;
-                color: #1f2937;
-                border-radius: 16px 16px 16px 0;
-            }
-
-            .message-content {
-                max-width: 70%;
-                padding: 1rem;
-                font-size: 0.95rem;
-                line-height: 1.5;
-
-                &.typing {
+                .typing-indicator {
                     display: flex;
                     gap: 0.5rem;
-                    padding: 0.75rem 1rem;
+                    padding: 0.5rem;
 
                     span {
                         width: 8px;
@@ -265,48 +202,64 @@ const MindBotStyled = styled.div`
                 }
             }
         }
-    }
 
-    .input-container {
-        padding: 1.5rem;
-        border-top: 1px solid #e2e8f0;
-        display: flex;
-        gap: 1rem;
+        .input-container {
+            position: relative;
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
 
-        textarea {
-            flex: 1;
-            padding: 0.75rem;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            resize: none;
-            font-family: inherit;
-            font-size: 0.95rem;
-            line-height: 1.5;
+            input {
+                flex: 1;
+                padding: 1rem 1.5rem;
+                border: none;
+                border-radius: 999px;
+                background: white;
+                font-size: 1rem;
+                color: #1f2937;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
-            &:focus {
-                outline: none;
-                border-color: #9333ea;
+                &:focus {
+                    outline: none;
+                    box-shadow: 0 0 0 2px #9333ea;
+                }
+
+                &::placeholder {
+                    color: #9ca3af;
+                }
+            }
+
+            .send-button {
+                background: none;
+                border: none;
+                color: #9333ea;
+                cursor: pointer;
+                font-size: 1.5rem;
+                display: flex;
+                align-items: center;
+                padding: 0.5rem;
+                transition: transform 0.2s;
+
+                &:hover:not(:disabled) {
+                    transform: scale(1.1);
+                }
+
+                &:disabled {
+                    color: #d1d5db;
+                    cursor: not-allowed;
+                }
             }
         }
 
-        button {
-            padding: 0.75rem 1.5rem;
-            background: #9333ea;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-
-            &:hover:not(:disabled) {
-                background: #7e22ce;
-            }
-
-            &:disabled {
-                background: #cbd5e0;
-                cursor: not-allowed;
-            }
+        .disclaimer {
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.875rem;
+            position: absolute;
+            bottom: 1rem;
+            left: 0;
+            right: 0;
+            padding: 0 2rem;
         }
     }
 
@@ -316,14 +269,25 @@ const MindBotStyled = styled.div`
     }
 
     @media (max-width: 640px) {
-        padding: 1rem;
+        padding: 0.5rem;
 
         .chat-container {
-            height: 90vh;
-        }
+            padding: 1rem;
 
-        .message .message-content {
-            max-width: 85%;
+            h1 {
+                font-size: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .messages .message.bot {
+                .greeting {
+                    font-size: 2rem;
+                }
+
+                .question {
+                    font-size: 1.5rem;
+                }
+            }
         }
     }
 `;
