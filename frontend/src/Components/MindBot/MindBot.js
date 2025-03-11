@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import { FaStethoscope, FaSpinner } from 'react-icons/fa';
+import { FaRobot, FaUser, FaPaperPlane } from 'react-icons/fa';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 function MindBot() {
@@ -17,8 +17,52 @@ function MindBot() {
             navigate('/');
         } else {
             setUser(JSON.parse(userData));
+            // Add initial welcome message
+            setMessages([
+                {
+                    type: 'bot',
+                    content: "Hello! I'm your Mental Health Assistant. I'm here to help you with mental health concerns, stress management, and emotional well-being. How are you feeling today?"
+                }
+            ]);
         }
     }, [navigate]);
+
+    const getMockDiseasePrompt = (userInput) => {
+        const symptoms = userInput.toLowerCase();
+        let specializedPrompt = `You are a mental health professional assistant. The user says: "${userInput}". 
+        Analyze their message and provide a thoughtful, empathetic response. Consider these aspects:
+
+        1. Emotional State Assessment
+        2. Potential Mental Health Concerns
+        3. Coping Strategies
+        4. Professional Help Recommendations
+        5. Supportive Resources
+
+        Common conditions to consider:
+        - Anxiety Disorders
+        - Depression
+        - Stress-related issues
+        - Sleep problems
+        - Mood disorders
+        - Panic attacks
+        - Social anxiety
+        - Work-related stress
+        - Relationship issues
+        - Self-esteem concerns
+        - Grief and loss
+        - Trauma-related stress
+
+        Provide a response that:
+        1. Shows empathy and understanding
+        2. Offers practical advice
+        3. Suggests professional help when needed
+        4. Includes relevant coping techniques
+        5. Maintains a supportive and non-judgmental tone
+
+        Format the response in a clear, easy-to-read manner.`;
+
+        return specializedPrompt;
+    };
 
     const handleSend = async () => {
         if (!input.trim()) return;
@@ -36,14 +80,7 @@ function MindBot() {
             const genAI = new GoogleGenerativeAI(process.env.REACT_APP_GEMINI_API_KEY);
             const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-            const prompt = `You are a mental health and medical assistant. The user says: ${input}. 
-                          Provide helpful medical advice and support. Remember to:
-                          1. Assess the symptoms carefully
-                          2. Provide practical suggestions
-                          3. Recommend professional medical help when needed
-                          4. Maintain a professional and caring tone
-                          Keep responses clear and actionable.`;
-
+            const prompt = getMockDiseasePrompt(input);
             const result = await model.generateContent(prompt);
             const response = await result.response;
             
@@ -55,7 +92,7 @@ function MindBot() {
             console.error('Error:', error);
             setMessages(prev => [...prev, {
                 type: 'bot',
-                content: "I apologize, but I encountered an error. Please try again or seek professional help if you need immediate assistance."
+                content: "I apologize, but I encountered an error. Please try rephrasing your question or seek professional help if you need immediate assistance."
             }]);
         } finally {
             setLoading(false);
@@ -73,16 +110,18 @@ function MindBot() {
         <MindBotStyled>
             <div className="chat-container">
                 <div className="header">
-                    <FaStethoscope className="stethoscope-icon" />
-                    <span>Mind Bot - Your Mental Wellness Assistant</span>
+                    <FaRobot className="bot-icon" />
+                    <div className="header-text">
+                        <h1>Mind Bot</h1>
+                        <p>Your Mental Wellness Assistant</p>
+                    </div>
                 </div>
                 <div className="messages">
-                    <div className="welcome-message">
-                        <h2>Hello! I'm your Mental Wellness Assistant</h2>
-                        <p>How can I help you today?</p>
-                    </div>
                     {messages.map((message, index) => (
                         <div key={index} className={`message ${message.type}`}>
+                            <div className="message-icon">
+                                {message.type === 'bot' ? <FaRobot /> : <FaUser />}
+                            </div>
                             <div className="message-content">
                                 {message.content}
                             </div>
@@ -90,9 +129,15 @@ function MindBot() {
                     ))}
                     {loading && (
                         <div className="message bot">
+                            <div className="message-icon">
+                                <FaRobot />
+                            </div>
                             <div className="message-content loading">
-                                <FaSpinner className="spinner" />
-                                <p>Analyzing your request...</p>
+                                <div className="typing-indicator">
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                </div>
                             </div>
                         </div>
                     )}
@@ -104,12 +149,14 @@ function MindBot() {
                         onChange={(e) => setInput(e.target.value)}
                         onKeyPress={handleKeyPress}
                         placeholder="Type your message here..."
+                        disabled={loading}
                     />
                     <button 
                         onClick={handleSend}
                         disabled={!input.trim() || loading}
+                        className="send-button"
                     >
-                        Send
+                        <FaPaperPlane />
                     </button>
                 </div>
             </div>
@@ -127,44 +174,43 @@ const MindBotStyled = styled.div`
 
     .chat-container {
         width: 100%;
-        max-width: 1000px;
-        min-height: 600px;
+        max-width: 800px;
+        height: 80vh;
         background: white;
-        border-radius: 12px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         display: flex;
         flex-direction: column;
         overflow: hidden;
     }
 
     .header {
-        background: #2d3748;
+        background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
         color: white;
-        padding: 1rem 2rem;
-        font-size: 1.25rem;
-        font-weight: 500;
+        padding: 1.5rem 2rem;
         display: flex;
         align-items: center;
         gap: 1rem;
 
-        .stethoscope-icon {
-            font-size: 1.5rem;
-            color: #9333ea;
-        }
-    }
-
-    .welcome-message {
-        text-align: center;
-        padding: 2rem;
-        color: #2d3748;
-
-        h2 {
-            margin: 0 0 1rem;
-            font-size: 1.5rem;
+        .bot-icon {
+            font-size: 2rem;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.5rem;
+            border-radius: 50%;
         }
 
-        p {
-            color: #4a5568;
+        .header-text {
+            h1 {
+                margin: 0;
+                font-size: 1.5rem;
+                font-weight: 600;
+            }
+
+            p {
+                margin: 0;
+                font-size: 0.9rem;
+                opacity: 0.9;
+            }
         }
     }
 
@@ -174,51 +220,90 @@ const MindBotStyled = styled.div`
         overflow-y: auto;
         display: flex;
         flex-direction: column;
-        gap: 1rem;
+        gap: 1.5rem;
+
+        &::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        &::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background: #9333ea;
+            border-radius: 3px;
+        }
 
         .message {
             display: flex;
-            justify-content: flex-end;
+            gap: 1rem;
+            max-width: 80%;
 
-            &.bot {
-                justify-content: flex-start;
-            }
+            &.user {
+                margin-left: auto;
+                flex-direction: row-reverse;
 
-            .message-content {
-                max-width: 80%;
-                padding: 1rem 1.5rem;
-                border-radius: 12px;
-                font-size: 1rem;
-                line-height: 1.5;
-                
-                &.loading {
-                    background: #f3f4f6;
-                    color: #6b7280;
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    gap: 1rem;
+                .message-content {
+                    background: #9333ea;
+                    color: white;
+                    border-radius: 20px 20px 0 20px;
+                }
 
-                    .spinner {
-                        font-size: 2rem;
-                        animation: spin 1s linear infinite;
-                    }
-
-                    p {
-                        margin: 0;
-                    }
+                .message-icon {
+                    background: #9333ea;
                 }
             }
 
-            &.user .message-content {
-                background: #2d3748;
-                color: white;
-                margin-left: auto;
+            &.bot {
+                margin-right: auto;
+
+                .message-content {
+                    background: #f3f4f6;
+                    color: #1f2937;
+                    border-radius: 20px 20px 20px 0;
+                }
+
+                .message-icon {
+                    background: #9333ea;
+                }
             }
 
-            &.bot .message-content {
-                background: #f3f4f6;
-                color: #1f2937;
+            .message-icon {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                flex-shrink: 0;
+            }
+
+            .message-content {
+                padding: 1rem 1.5rem;
+                font-size: 1rem;
+                line-height: 1.5;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+                &.loading {
+                    .typing-indicator {
+                        display: flex;
+                        gap: 0.5rem;
+                        padding: 0.5rem 0;
+
+                        span {
+                            width: 8px;
+                            height: 8px;
+                            background: #9333ea;
+                            border-radius: 50%;
+                            animation: bounce 1.4s infinite ease-in-out;
+
+                            &:nth-child(1) { animation-delay: -0.32s; }
+                            &:nth-child(2) { animation-delay: -0.16s; }
+                        }
+                    }
+                }
             }
         }
     }
@@ -228,37 +313,48 @@ const MindBotStyled = styled.div`
         border-top: 1px solid #e5e7eb;
         display: flex;
         gap: 1rem;
+        background: white;
 
         input {
             flex: 1;
-            padding: 0.75rem 1rem;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
+            padding: 1rem 1.5rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 25px;
             font-size: 1rem;
-            color: #1f2937;
+            transition: all 0.3s ease;
 
             &:focus {
                 outline: none;
-                border-color: #2d3748;
+                border-color: #9333ea;
+                box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.1);
             }
 
             &::placeholder {
                 color: #9ca3af;
             }
+
+            &:disabled {
+                background: #f3f4f6;
+                cursor: not-allowed;
+            }
         }
 
-        button {
-            padding: 0.75rem 1.5rem;
-            background: #2d3748;
-            color: white;
+        .send-button {
+            width: 50px;
+            height: 50px;
             border: none;
-            border-radius: 6px;
-            font-size: 1rem;
+            border-radius: 25px;
+            background: #9333ea;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.3s ease;
 
             &:hover:not(:disabled) {
-                background: #1a202c;
+                background: #7e22ce;
+                transform: scale(1.05);
             }
 
             &:disabled {
@@ -268,28 +364,62 @@ const MindBotStyled = styled.div`
         }
     }
 
-    @keyframes spin {
-        from {
-            transform: rotate(0deg);
-        }
-        to {
-            transform: rotate(360deg);
-        }
+    @keyframes bounce {
+        0%, 80%, 100% { transform: scale(0); }
+        40% { transform: scale(1); }
     }
 
     @media (max-width: 768px) {
         padding: 1rem;
 
         .chat-container {
-            min-height: calc(100vh - 2rem);
+            height: calc(100vh - 2rem);
+            border-radius: 15px;
+        }
+
+        .header {
+            padding: 1rem 1.5rem;
+
+            .bot-icon {
+                font-size: 1.5rem;
+            }
+
+            .header-text {
+                h1 {
+                    font-size: 1.2rem;
+                }
+
+                p {
+                    font-size: 0.8rem;
+                }
+            }
         }
 
         .messages {
             padding: 1rem;
+            gap: 1rem;
+
+            .message {
+                max-width: 90%;
+
+                .message-content {
+                    padding: 0.75rem 1rem;
+                    font-size: 0.9rem;
+                }
+            }
         }
 
         .input-section {
             padding: 1rem;
+
+            input {
+                padding: 0.75rem 1rem;
+            }
+
+            .send-button {
+                width: 45px;
+                height: 45px;
+            }
         }
     }
 `;
