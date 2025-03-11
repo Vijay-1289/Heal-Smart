@@ -1,7 +1,8 @@
 import React from 'react'
 import styled from 'styled-components'
 import { NavLink, useNavigate } from 'react-router-dom'
-import { FaHome, FaStethoscope, FaHospital, FaRobot, FaSignOutAlt } from 'react-icons/fa';
+import { FaHome, FaStethoscope, FaHospital, FaRobot, FaSignOutAlt, FaBrain } from 'react-icons/fa';
+import { MdHealthAndSafety } from 'react-icons/md';
 
 function Navigation() {
     const navigate = useNavigate();
@@ -22,18 +23,24 @@ function Navigation() {
         },
         {
             id: 2,
-            title: 'Mind Bot',
-            icon: <FaStethoscope className="nav-icon" />,
-            link: '/mindbot'
+            title: 'AI Nurse',
+            icon: <MdHealthAndSafety className="nav-icon" />,
+            link: '/ainurse'
         },
         {
             id: 3,
-            title: 'Consult Doctor',
-            icon: <FaRobot className="nav-icon" />,
-            link: '/consult-doctor'
+            title: 'Mind Bot',
+            icon: <FaBrain className="nav-icon" />,
+            link: '/mindbot'
         },
         {
             id: 4,
+            title: 'Consult Doctor',
+            icon: <FaStethoscope className="nav-icon" />,
+            link: '/consult-doctor'
+        },
+        {
+            id: 5,
             title: 'Nearby Hospitals',
             icon: <FaHospital className="nav-icon" />,
             link: '/nearby-hospitals'

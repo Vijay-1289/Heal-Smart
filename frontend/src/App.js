@@ -11,6 +11,8 @@ import DoctorDashboard from './Components/DoctorDashboard/DoctorDashboard';
 import DoctorDetails from './Components/DoctorDetails/DoctorDetails';
 import AINurse from './Components/AINurse/AINurse';
 import Login from './Components/Auth/Login';
+import MindBot from './Components/MindBot/MindBot';
+import PatientDashboard from './Components/Dashboard/PatientDashboard';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import ContextProvider from './context/Context';
@@ -40,6 +42,16 @@ function App() {
                             <Route path="/login" element={<Login />} />
                             
                             {/* Protected Routes */}
+                            <Route path="/dashboard" element={
+                                <ProtectedRoute>
+                                    <PatientDashboard />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/mindbot" element={
+                                <ProtectedRoute>
+                                    <MindBot />
+                                </ProtectedRoute>
+                            } />
                             <Route path="/mental-wellness" element={
                                 <ProtectedRoute>
                                     <MentalWellness />
@@ -65,7 +77,7 @@ function App() {
                                     <DoctorDashboard />
                                 </ProtectedRoute>
                             } />
-                            <Route path="/ai-nurse" element={
+                            <Route path="/ainurse" element={
                                 <ProtectedRoute>
                                     <AINurse />
                                 </ProtectedRoute>
