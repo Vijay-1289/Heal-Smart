@@ -3,10 +3,11 @@ import styled from "styled-components";
 import { InnerLayout } from "../../styles/Layouts";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { FaStar } from "react-icons/fa";
+import { FaStar, FaMapMarkerAlt, FaClock, FaRupeeSign, FaLanguage } from "react-icons/fa";
 import DoctorDetails from "../DoctorDetails/DoctorDetails";
 import { FilterContext } from "../../context/FilterContext";
 import { doctorImages, doctorGender } from "../../utils/doctorImages";
+import { useNavigate } from 'react-router-dom';
 
 // Mock data for doctors
 const mockDoctors = [
@@ -21,7 +22,8 @@ const mockDoctors = [
     education: 'MD, DM Cardiology',
     languages: ['Telugu', 'English', 'Hindi'],
     consultationFee: '₹800',
-    nextAvailable: 'Today'
+    nextAvailable: 'Today',
+    imageUrl: 'https://example.com/doctor1.jpg'
   },
   {
     id: '2',
@@ -34,7 +36,8 @@ const mockDoctors = [
     education: 'MD, DM Neurology',
     languages: ['Telugu', 'English'],
     consultationFee: '₹700',
-    nextAvailable: 'Tomorrow'
+    nextAvailable: 'Tomorrow',
+    imageUrl: 'https://example.com/doctor2.jpg'
   },
   {
     id: '3',
@@ -142,13 +145,24 @@ const mockDoctors = [
   }
 ];
 
-function ConsultDoctor({ updateFilter }) {
+function ConsultDoctor() {
   const { doctorSpec, setDoctorSpec } = useContext(FilterContext);
-  const [doctors, setDoctors] = useState([]);
+  const [doctors, setDoctors] = useState(mockDoctors);
   const [filteredItems, setFilteredItems] = useState(doctors);
   const [selectedDoctor, setSelectedDoctor] = useState(doctorSpec);
   const [showDoctorDetails, setShowDoctorDetails] = useState(false);
   const [DoctorDet, setDoctorDet] = useState([]);
+  const navigate = useNavigate();
+
+  const specializations = [
+    'All Specializations',
+    'Cardiologist',
+    'Neurologist',
+    'Pediatrician',
+    'Orthopedic',
+    'Gynecologist',
+    'Dermatologist'
+  ];
 
   useEffect(() => {
     // Set mock data instead of fetching from Firebase
@@ -169,101 +183,105 @@ function ConsultDoctor({ updateFilter }) {
     setShowDoctorDetails(true);
   };
 
-  const filters = [
-    "All Specializations",
-    "Cardiologist",
-    "Neurologist",
-    "Pediatrician",
-    "Orthopedic Surgeon",
-    "Gynecologist",
-    "General Medicine",
-    "Pulmonologist",
-    "Dermatologist",
-    "Gastroenterologist"
-  ];
-
-  const handleFilterChange = (event) => {
-    setSelectedDoctor(event.target.value);
-  };
-
-  const filterItems = () => {
-    if (selectedDoctor) {
-      setFilteredItems(
-        doctors.filter((doctor) => doctor.specialisation === selectedDoctor)
-      );
+  const handleSpecializationChange = (e) => {
+    const specialization = e.target.value;
+    setSelectedDoctor(specialization);
+    
+    if (specialization === 'All Specializations' || !specialization) {
+      setDoctors(mockDoctors);
     } else {
-      setFilteredItems(doctors);
+      const filtered = mockDoctors.filter(doctor => 
+        doctor.specialisation === specialization
+      );
+      setDoctors(filtered);
     }
   };
 
-  useEffect(() => {
-    filterItems();
-  }, [selectedDoctor, doctors]);
+  const handleBookAppointment = (doctor) => {
+    // Navigate to booking page with doctor details
+    navigate(`/book-appointment/${doctor.id}`, { state: { doctor } });
+  };
 
   return (
     <>
       {!showDoctorDetails ? (
-        <DashboardStyled>
-          <div className="heading">
-            <h2>Consult Doctor</h2>
-            <p>Find and book appointments with doctors in Vijayawada & Eluru</p>
-          </div>
-          <InnerLayout>
+        <ConsultDoctorStyled>
+          <div className="container">
+            <header>
+              <h1>Find & Book Appointment with Doctors</h1>
+              <p>Book appointments with the best doctors near you</p>
+            </header>
+
             <div className="filter-section">
-              <select
+              <select 
                 value={selectedDoctor}
-                onChange={handleFilterChange}
-                className="filter-select"
+                onChange={handleSpecializationChange}
+                className="specialization-select"
               >
-                <option value="">All Specializations</option>
-                {filters.map((filter, idx) => (
-                  <option key={`filter-${idx}`} value={filter}>
-                    {filter}
-                  </option>
+                <option value="">Select Specialization</option>
+                {specializations.map((spec, index) => (
+                  <option key={index} value={spec}>{spec}</option>
                 ))}
               </select>
             </div>
 
-            <div className="doctors-grid">
-              {filteredItems.map((doctor, idx) => (
-                <div key={`doctor-${idx}`} className="doctor-card">
-                  <div className="doctor-image">
-                    <img src={doctor.imageUri} alt={doctor.name} />
-                  </div>
+            <div className="doctors-list">
+              {doctors.map(doctor => (
+                <div key={doctor.id} className="doctor-card">
                   <div className="doctor-info">
-                    <h3>{doctor.name}</h3>
-                    <p className="specialization">{doctor.specialisation}</p>
-                    <p className="education">{doctor.education}</p>
-                    <p className="experience">{doctor.experience}</p>
-                    <div className="rating">
-                      {[...Array(5)].map((_, i) => (
-                        <FaStar
-                          key={`star-${i}`}
-                          className={i < Math.floor(Math.random() * 2 + 4) ? "star-filled" : "star-empty"}
-                        />
-                      ))}
+                    <div className="doctor-header">
+                      <div className="doctor-image">
+                        <img src={doctor.imageUri} alt={doctor.name} />
+                      </div>
+                      <div className="doctor-details">
+                        <h2>{doctor.name}</h2>
+                        <p className="specialization">{doctor.specialisation}</p>
+                        <p className="experience">{doctor.experience}</p>
+                        <div className="rating">
+                          {[...Array(5)].map((_, i) => (
+                            <FaStar key={i} className={i < 4 ? 'star-filled' : 'star-empty'} />
+                          ))}
+                        </div>
+                      </div>
                     </div>
-                    <p className="hospital">{doctor.hospital}</p>
-                    <p className="address">{doctor.address}</p>
-                    <p className="timings">{doctor.timings}</p>
-                    <div className="additional-info">
-                      <p className="languages">Languages: {doctor.languages.join(', ')}</p>
-                      <p className="fee">Consultation Fee: {doctor.consultationFee}</p>
-                      <p className="availability">Next Available: {doctor.nextAvailable}</p>
+
+                    <div className="practice-details">
+                      <div className="detail">
+                        <FaMapMarkerAlt />
+                        <span>{doctor.address}</span>
+                      </div>
+                      <div className="detail">
+                        <FaClock />
+                        <span>{doctor.timings}</span>
+                      </div>
+                      <div className="detail">
+                        <FaLanguage />
+                        <span>{doctor.languages.join(', ')}</span>
+                      </div>
+                      <div className="detail">
+                        <FaRupeeSign />
+                        <span>Consultation Fee: {doctor.consultationFee}</span>
+                      </div>
                     </div>
-                    <button
-                      onClick={() => notify(doctor)}
-                      className="book-button"
-                    >
-                      Book Appointment
-                    </button>
+
+                    <div className="booking-section">
+                      <div className="availability">
+                        <span className="next-available">Next Available: {doctor.nextAvailable}</span>
+                      </div>
+                      <button 
+                        className="book-button"
+                        onClick={() => handleBookAppointment(doctor)}
+                      >
+                        Book Appointment
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
-          </InnerLayout>
+          </div>
           <ToastContainer />
-        </DashboardStyled>
+        </ConsultDoctorStyled>
       ) : (
         <DoctorDetails DoctorDet={DoctorDet} />
       )}
@@ -271,231 +289,202 @@ function ConsultDoctor({ updateFilter }) {
   );
 }
 
-const DashboardStyled = styled.div`
-    height: 100vh;
-    overflow-y: auto;
-    padding: 1rem 0;
+const ConsultDoctorStyled = styled.div`
+  padding: 2rem;
+  background: #f3f4f6;
+  min-height: 100vh;
 
-    /* Customize scrollbar for the main container */
-    &::-webkit-scrollbar {
-        width: 8px;
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 2rem;
+
+    h1 {
+      color: #1f2937;
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
     }
 
-    &::-webkit-scrollbar-track {
-        background: rgba(0, 0, 0, 0.05);
-        border-radius: 10px;
+    p {
+      color: #6b7280;
+      font-size: 1.1rem;
     }
+  }
 
-    &::-webkit-scrollbar-thumb {
-        background: rgba(147, 51, 234, 0.2);
-        border-radius: 10px;
+  .filter-section {
+    margin-bottom: 2rem;
 
-        &:hover {
-            background: rgba(147, 51, 234, 0.4);
-        }
+    .specialization-select {
+      width: 100%;
+      max-width: 300px;
+      padding: 0.75rem 1rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 1rem;
+      color: #1f2937;
+      background: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      &:focus {
+        outline: none;
+        border-color: #9333ea;
+        box-shadow: 0 0 0 2px rgba(147, 51, 234, 0.1);
+      }
     }
+  }
 
-    .heading {
-        position: sticky;
-        top: 0;
-        background: rgba(255, 255, 255, 0.9);
-        backdrop-filter: blur(8px);
-        z-index: 10;
-        padding: 1rem 0;
-        margin-bottom: 1rem;
-        text-align: center;
+  .doctors-list {
+    display: grid;
+    gap: 2rem;
 
-        h2 {
-            font-size: 29px;
-            color: darkviolet;
-            font-weight: 605;
-            margin: 0;
-            padding: 1rem 1.5rem;
-        }
+    .doctor-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
 
-        p {
-            color: #666;
-            font-size: 1.1rem;
-            margin: 0;
-        }
-    }
+      &:hover {
+        transform: translateY(-4px);
+      }
 
-    .filter-section {
-        position: sticky;
-        top: 80px;
-        background: rgba(255, 255, 255, 0.9);
-        backdrop-filter: blur(8px);
-        z-index: 9;
-        padding: 1rem;
-        margin-bottom: 2rem;
-        
-        .filter-select {
-            padding: 0.8rem 1.5rem;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
-            font-size: 1rem;
-            color: #333;
-            background-color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
+      .doctor-header {
+        display: flex;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+
+        .doctor-image {
+          width: 100px;
+          height: 100px;
+          border-radius: 50%;
+          overflow: hidden;
+
+          img {
             width: 100%;
-            max-width: 300px;
-
-            &:focus {
-                outline: none;
-                border-color: darkviolet;
-            }
-
-            &:hover {
-                border-color: darkviolet;
-            }
+            height: 100%;
+            object-fit: cover;
+          }
         }
-    }
 
-    .doctors-grid {
+        .doctor-details {
+          h2 {
+            color: #1f2937;
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+          }
+
+          .specialization {
+            color: #2563eb;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+          }
+
+          .experience {
+            color: #059669;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+          }
+
+          .rating {
+            display: flex;
+            gap: 0.25rem;
+
+            .star-filled {
+              color: #fbbf24;
+            }
+
+            .star-empty {
+              color: #e5e7eb;
+            }
+          }
+        }
+      }
+
+      .practice-details {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 2rem;
-        padding: 2rem 0;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+
+        .detail {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          color: #4b5563;
+          font-size: 0.875rem;
+
+          svg {
+            color: #6b7280;
+          }
+        }
+      }
+
+      .booking-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 1rem;
+        border-top: 1px solid #e5e7eb;
+
+        .availability {
+          .next-available {
+            color: #059669;
+            font-weight: 500;
+          }
+        }
+
+        .book-button {
+          background: #9333ea;
+          color: white;
+          padding: 0.75rem 1.5rem;
+          border: none;
+          border-radius: 6px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: background 0.3s ease;
+
+          &:hover {
+            background: #7e22ce;
+          }
+        }
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+
+    header {
+      h1 {
+        font-size: 1.5rem;
+      }
     }
 
     .doctor-card {
-        background: white;
-        border-radius: 1rem;
-        padding: 1.5rem;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s ease;
-        
-        &:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-        }
+      .doctor-header {
+        flex-direction: column;
+        text-align: center;
 
         .doctor-image {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 1rem;
-            border-radius: 50%;
-            background: #f5f5f5;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-
-            img {
-                width: 100%;
-                height: 100%;
-                object-fit: contain;
-                padding: 1rem;
-            }
+          margin: 0 auto;
         }
+      }
 
-        .doctor-info {
-            text-align: center;
+      .booking-section {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
 
-            h3 {
-                color: #333;
-                margin-bottom: 0.5rem;
-                font-size: 1.2rem;
-            }
-
-            .specialization {
-                color: #2196f3;
-                font-weight: 500;
-                margin-bottom: 0.5rem;
-            }
-
-            .education {
-                color: #666;
-                font-size: 0.9rem;
-                margin-bottom: 0.5rem;
-            }
-
-            .experience {
-                color: #4caf50;
-                font-size: 0.9rem;
-                margin-bottom: 0.5rem;
-            }
-
-            .hospital {
-                color: #333;
-                font-weight: 500;
-                margin-bottom: 0.25rem;
-            }
-
-            .address {
-                color: #666;
-                font-size: 0.9rem;
-                margin-bottom: 0.5rem;
-            }
-
-            .timings {
-                color: #ff9800;
-                font-size: 0.9rem;
-                margin-bottom: 1rem;
-            }
-
-            .additional-info {
-                background: #f5f5f5;
-                padding: 1rem;
-                border-radius: 0.5rem;
-                margin-bottom: 1rem;
-
-                p {
-                    margin-bottom: 0.5rem;
-                    font-size: 0.9rem;
-                    
-                    &:last-child {
-                        margin-bottom: 0;
-                    }
-                }
-
-                .languages {
-                    color: #666;
-                }
-
-                .fee {
-                    color: #e91e63;
-                    font-weight: 500;
-                }
-
-                .availability {
-                    color: #4caf50;
-                    font-weight: 500;
-                }
-            }
-
-            .book-button {
-                background: #2196f3;
-                color: white;
-                border: none;
-                padding: 0.75rem 1.5rem;
-                border-radius: 0.5rem;
-                cursor: pointer;
-                font-weight: 500;
-                transition: background 0.3s ease;
-
-                &:hover {
-                    background: #1976d2;
-                }
-            }
+        .book-button {
+          width: 100%;
         }
+      }
     }
-
-    @media (max-width: 768px) {
-        .doctors-grid {
-            grid-template-columns: 1fr;
-            padding: 0.5rem;
-        }
-
-        .filter-section {
-            padding: 1rem 0.5rem;
-            
-            .filter-select {
-                max-width: 100%;
-            }
-        }
-    }
+  }
 `;
 
 export default ConsultDoctor;

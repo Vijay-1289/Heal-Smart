@@ -1,18 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { useNavigate } from 'react-router-dom';
+import { FaStethoscope } from 'react-icons/fa';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import doctorThinking from '../../img/doctor-thinking.gif';
 
 function MindBot() {
     const [input, setInput] = useState('');
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [user, setUser] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
         const userData = localStorage.getItem('user');
         if (!userData) {
             navigate('/');
+        } else {
+            setUser(JSON.parse(userData));
         }
     }, [navigate]);
 
@@ -69,9 +74,14 @@ function MindBot() {
         <MindBotStyled>
             <div className="chat-container">
                 <div className="header">
-                    Mind Bot - Your Mental Wellness Assistant
+                    <FaStethoscope className="stethoscope-icon" />
+                    <span>Mind Bot - Your Mental Wellness Assistant</span>
                 </div>
                 <div className="messages">
+                    <div className="welcome-message">
+                        <h2>Hello! I'm your Mental Wellness Assistant</h2>
+                        <p>How can I help you today?</p>
+                    </div>
                     {messages.map((message, index) => (
                         <div key={index} className={`message ${message.type}`}>
                             <div className="message-content">
@@ -82,7 +92,8 @@ function MindBot() {
                     {loading && (
                         <div className="message bot">
                             <div className="message-content loading">
-                                Processing your request...
+                                <img src={doctorThinking} alt="Doctor thinking" className="thinking-animation" />
+                                <p>Analyzing your request...</p>
                             </div>
                         </div>
                     )}
@@ -133,7 +144,29 @@ const MindBotStyled = styled.div`
         padding: 1rem 2rem;
         font-size: 1.25rem;
         font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+
+        .stethoscope-icon {
+            font-size: 1.5rem;
+            color: #9333ea;
+        }
+    }
+
+    .welcome-message {
         text-align: center;
+        padding: 2rem;
+        color: #2d3748;
+
+        h2 {
+            margin: 0 0 1rem;
+            font-size: 1.5rem;
+        }
+
+        p {
+            color: #4a5568;
+        }
     }
 
     .messages {
@@ -162,6 +195,20 @@ const MindBotStyled = styled.div`
                 &.loading {
                     background: #f3f4f6;
                     color: #6b7280;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 1rem;
+
+                    .thinking-animation {
+                        width: 100px;
+                        height: 100px;
+                        object-fit: cover;
+                    }
+
+                    p {
+                        margin: 0;
+                    }
                 }
             }
 
