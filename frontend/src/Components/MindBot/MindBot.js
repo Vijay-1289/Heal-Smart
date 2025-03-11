@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { useNavigate } from 'react-router-dom';
-import { IoSend } from 'react-icons/io5';
 
 function MindBot() {
     const [input, setInput] = useState('');
@@ -14,16 +13,6 @@ function MindBot() {
         const userData = localStorage.getItem('user');
         if (!userData) {
             navigate('/');
-        } else {
-            setMessages([
-                {
-                    type: 'bot',
-                    content: {
-                        greeting: 'Hi, there!',
-                        question: 'How are you feeling today?'
-                    }
-                }
-            ]);
         }
     }, [navigate]);
 
@@ -43,13 +32,13 @@ function MindBot() {
             const genAI = new GoogleGenerativeAI(process.env.REACT_APP_GEMINI_API_KEY);
             const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-            const prompt = `You are a compassionate mental health companion. The user says: ${input}. 
-                          Provide empathetic support and practical advice. Remember to:
-                          1. Validate their feelings
-                          2. Offer constructive suggestions
-                          3. Encourage professional help when appropriate
-                          4. Maintain a supportive and understanding tone
-                          Keep responses concise and conversational.`;
+            const prompt = `You are a mental health and medical assistant. The user says: ${input}. 
+                          Provide helpful medical advice and support. Remember to:
+                          1. Assess the symptoms carefully
+                          2. Provide practical suggestions
+                          3. Recommend professional medical help when needed
+                          4. Maintain a professional and caring tone
+                          Keep responses clear and actionable.`;
 
             const result = await model.generateContent(prompt);
             const response = await result.response;
@@ -62,7 +51,7 @@ function MindBot() {
             console.error('Error:', error);
             setMessages(prev => [...prev, {
                 type: 'bot',
-                content: "I apologize, but I'm having trouble processing your message. Please try again."
+                content: "I apologize, but I encountered an error. Please try again or seek professional help if you need immediate assistance."
             }]);
         } finally {
             setLoading(false);
@@ -79,48 +68,39 @@ function MindBot() {
     return (
         <MindBotStyled>
             <div className="chat-container">
-                <h1>Mind-Bot</h1>
+                <div className="header">
+                    Mind Bot - Your Mental Wellness Assistant
+                </div>
                 <div className="messages">
                     {messages.map((message, index) => (
                         <div key={index} className={`message ${message.type}`}>
-                            {message.type === 'bot' && typeof message.content === 'object' ? (
-                                <>
-                                    <div className="greeting">{message.content.greeting}</div>
-                                    <div className="question">{message.content.question}</div>
-                                </>
-                            ) : (
-                                <div className="text">{message.content}</div>
-                            )}
+                            <div className="message-content">
+                                {message.content}
+                            </div>
                         </div>
                     ))}
                     {loading && (
                         <div className="message bot">
-                            <div className="typing-indicator">
-                                <span></span>
-                                <span></span>
-                                <span></span>
+                            <div className="message-content loading">
+                                Processing your request...
                             </div>
                         </div>
                     )}
                 </div>
-                <div className="input-container">
+                <div className="input-section">
                     <input
                         type="text"
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         onKeyPress={handleKeyPress}
-                        placeholder="Share your thoughts here"
+                        placeholder="Type your message here..."
                     />
                     <button 
                         onClick={handleSend}
                         disabled={!input.trim() || loading}
-                        className="send-button"
                     >
-                        <IoSend />
+                        Send
                     </button>
-                </div>
-                <div className="disclaimer">
-                    Mind-Bot cannot replace professional help. If you need it, it will guide you towards qualified mental health resources.
                 </div>
             </div>
         </MindBotStyled>
@@ -133,161 +113,139 @@ const MindBotStyled = styled.div`
     align-items: center;
     min-height: 100vh;
     background: #f3e8ff;
-    padding: 1rem;
+    padding: 2rem;
 
     .chat-container {
         width: 100%;
-        max-width: 800px;
+        max-width: 1000px;
         min-height: 600px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         display: flex;
         flex-direction: column;
-        position: relative;
+        overflow: hidden;
+    }
+
+    .header {
+        background: #2d3748;
+        color: white;
+        padding: 1rem 2rem;
+        font-size: 1.25rem;
+        font-weight: 500;
+        text-align: center;
+    }
+
+    .messages {
+        flex: 1;
         padding: 2rem;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
 
-        h1 {
-            color: #9333ea;
-            margin: 0 0 2rem;
-            font-size: 2rem;
-            font-weight: 600;
-        }
-
-        .messages {
-            flex: 1;
-            overflow-y: auto;
-            margin-bottom: 2rem;
-            padding: 1rem 0;
-
-            .message {
-                margin-bottom: 1.5rem;
-
-                &.bot {
-                    .greeting {
-                        font-size: 2.5rem;
-                        color: #3b82f6;
-                        margin-bottom: 0.5rem;
-                    }
-
-                    .question {
-                        font-size: 2rem;
-                        color: #6b7280;
-                    }
-
-                    .text {
-                        font-size: 1.1rem;
-                        color: #4b5563;
-                        line-height: 1.6;
-                    }
-                }
-
-                &.user .text {
-                    color: #1f2937;
-                    font-size: 1.1rem;
-                }
-
-                .typing-indicator {
-                    display: flex;
-                    gap: 0.5rem;
-                    padding: 0.5rem;
-
-                    span {
-                        width: 8px;
-                        height: 8px;
-                        background: #9333ea;
-                        border-radius: 50%;
-                        animation: bounce 1s infinite;
-
-                        &:nth-child(2) { animation-delay: 0.2s; }
-                        &:nth-child(3) { animation-delay: 0.4s; }
-                    }
-                }
-            }
-        }
-
-        .input-container {
-            position: relative;
+        .message {
             display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
+            justify-content: flex-end;
 
-            input {
-                flex: 1;
+            &.bot {
+                justify-content: flex-start;
+            }
+
+            .message-content {
+                max-width: 80%;
                 padding: 1rem 1.5rem;
-                border: none;
-                border-radius: 999px;
-                background: white;
+                border-radius: 12px;
                 font-size: 1rem;
+                line-height: 1.5;
+                
+                &.loading {
+                    background: #f3f4f6;
+                    color: #6b7280;
+                }
+            }
+
+            &.user .message-content {
+                background: #2d3748;
+                color: white;
+                margin-left: auto;
+            }
+
+            &.bot .message-content {
+                background: #f3f4f6;
                 color: #1f2937;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-
-                &:focus {
-                    outline: none;
-                    box-shadow: 0 0 0 2px #9333ea;
-                }
-
-                &::placeholder {
-                    color: #9ca3af;
-                }
             }
-
-            .send-button {
-                background: none;
-                border: none;
-                color: #9333ea;
-                cursor: pointer;
-                font-size: 1.5rem;
-                display: flex;
-                align-items: center;
-                padding: 0.5rem;
-                transition: transform 0.2s;
-
-                &:hover:not(:disabled) {
-                    transform: scale(1.1);
-                }
-
-                &:disabled {
-                    color: #d1d5db;
-                    cursor: not-allowed;
-                }
-            }
-        }
-
-        .disclaimer {
-            text-align: center;
-            color: #6b7280;
-            font-size: 0.875rem;
-            position: absolute;
-            bottom: 1rem;
-            left: 0;
-            right: 0;
-            padding: 0 2rem;
         }
     }
 
-    @keyframes bounce {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-5px); }
+    .input-section {
+        padding: 1.5rem;
+        border-top: 1px solid #e5e7eb;
+        display: flex;
+        gap: 1rem;
+
+        input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 1rem;
+            color: #1f2937;
+
+            &:focus {
+                outline: none;
+                border-color: #2d3748;
+            }
+
+            &::placeholder {
+                color: #9ca3af;
+            }
+        }
+
+        button {
+            padding: 0.75rem 2rem;
+            background: #2d3748;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+
+            &:hover:not(:disabled) {
+                background: #1f2937;
+            }
+
+            &:disabled {
+                background: #9ca3af;
+                cursor: not-allowed;
+            }
+        }
     }
 
     @media (max-width: 640px) {
-        padding: 0.5rem;
+        padding: 1rem;
 
         .chat-container {
+            min-height: calc(100vh - 2rem);
+            border-radius: 8px;
+        }
+
+        .header {
+            padding: 0.75rem 1rem;
+            font-size: 1.1rem;
+        }
+
+        .messages {
             padding: 1rem;
 
-            h1 {
-                font-size: 1.5rem;
-                margin-bottom: 1.5rem;
+            .message .message-content {
+                max-width: 90%;
             }
+        }
 
-            .messages .message.bot {
-                .greeting {
-                    font-size: 2rem;
-                }
-
-                .question {
-                    font-size: 1.5rem;
-                }
-            }
+        .input-section {
+            padding: 1rem;
         }
     }
 `;
