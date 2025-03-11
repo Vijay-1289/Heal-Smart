@@ -13,52 +13,35 @@ function Login() {
         const handleGoogleSuccess = async (response) => {
             try {
                 console.log('Google response:', response);
-                const backendUrl = 'https://heal-smart-backend.onrender.com';
-                console.log('Attempting to connect to:', backendUrl);
                 
-                const res = await fetch(`${backendUrl}/api/auth/google`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'Origin': 'https://heal-smart-heal.netlify.app'
-                    },
-                    mode: 'cors',
-                    credentials: 'omit',
-                    body: JSON.stringify({
-                        credential: response.credential,
-                        clientId: CLIENT_ID
-                    }),
-                });
+                // Decode the JWT token from Google
+                const base64Url = response.credential.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
 
-                if (!res.ok) {
-                    const errorText = await res.text();
-                    console.error('Server error response:', {
-                        status: res.status,
-                        statusText: res.statusText,
-                        error: errorText
-                    });
-                    throw new Error(`Server error: ${errorText || res.statusText}`);
-                }
+                const decodedToken = JSON.parse(jsonPayload);
+                console.log('Decoded token:', decodedToken);
 
-                const data = await res.json();
-                console.log('Login response:', data);
+                // Create user object from Google data
+                const user = {
+                    email: decodedToken.email,
+                    name: decodedToken.name,
+                    picture: decodedToken.picture,
+                    given_name: decodedToken.given_name,
+                    family_name: decodedToken.family_name
+                };
+
+                // Store the token and user data
+                localStorage.setItem('token', response.credential);
+                localStorage.setItem('user', JSON.stringify(user));
                 
-                if (data.token) {
-                    localStorage.setItem('token', data.token);
-                    localStorage.setItem('user', JSON.stringify(data.user));
-                    toast.success('Login successful!');
-                    navigate('/dashboard');
-                } else {
-                    throw new Error('No token received from server');
-                }
+                toast.success('Login successful!');
+                navigate('/dashboard');
             } catch (error) {
                 console.error('Login failed:', error);
-                if (error.message === 'Failed to fetch') {
-                    toast.error('Unable to connect to the server. Please check if the backend server is running.');
-                } else {
-                    toast.error(`Login failed: ${error.message}`);
-                }
+                toast.error(`Login failed: ${error.message}`);
             }
         };
 
@@ -85,8 +68,7 @@ function Login() {
                         callback: handleGoogleSuccess,
                         auto_select: false,
                         cancel_on_tap_outside: true,
-                        scope: 'email profile',
-                        redirect_uri: 'https://heal-smart-heal.netlify.app'
+                        scope: 'email profile'
                     });
 
                     console.log('Rendering Google Sign-In button');
