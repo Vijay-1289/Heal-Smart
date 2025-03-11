@@ -6,6 +6,7 @@ import NurseAvatar from './NurseAvatar';
 import PatientDashboard from '../Dashboard/PatientDashboard';
 import { useNavigate } from 'react-router-dom';
 import { useGlobalContext } from '../../context/Context';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Initial medical knowledge base
 let medicalKnowledge = {
@@ -175,13 +176,13 @@ function AINurse() {
     const { input, setInput, onSent, loading, resultData } = useGlobalContext();
     const [chatHistory, setChatHistory] = useState([]);
     const [isListening, setIsListening] = useState(false);
-    const [spokenResponse, setSpokenResponse] = useState('');
+    const [spokenText, setSpokenText] = useState('');
     const [isAvatarSpeaking, setIsAvatarSpeaking] = useState(false);
     const [currentCondition, setCurrentCondition] = useState(null);
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
     
-    const speechRecognition = useRef(null);
+    const recognitionRef = useRef(null);
     const speechSynthesis = useRef(window.speechSynthesis);
 
     useEffect(() => {
@@ -193,6 +194,34 @@ function AINurse() {
             navigate('/');
         }
     }, [navigate]);
+
+    useEffect(() => {
+        // Initialize Web Speech API
+        if ('webkitSpeechRecognition' in window) {
+            const recognition = new window.webkitSpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+
+            recognition.onresult = (event) => {
+                const transcript = Array.from(event.results)
+                    .map(result => result[0])
+                    .map(result => result.transcript)
+                    .join('');
+                setSpokenText(transcript);
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                setIsListening(false);
+            };
+
+            recognition.onend = () => {
+                setIsListening(false);
+            };
+
+            recognitionRef.current = recognition;
+        }
+    }, []);
 
     // Speech synthesis function
     const speak = useCallback(async (text) => {
@@ -226,7 +255,6 @@ function AINurse() {
             setIsAvatarSpeaking(true);
             utterance.onend = () => setIsAvatarSpeaking(false);
             speechSynthesis.current.speak(utterance);
-            setSpokenResponse(text);
         }
     }, []);
 
@@ -315,50 +343,40 @@ Available conditions:
         speak(response);
     }, [processUserInput, speak]);
 
-    const toggleListening = useCallback(() => {
+    const toggleListening = () => {
         if (isListening) {
-            speechRecognition.current.stop();
+            recognitionRef.current?.stop();
         } else {
-            setSpokenResponse('');
-            speechRecognition.current.start();
-            setIsListening(true);
+            recognitionRef.current?.start();
         }
-    }, [isListening]);
-    
-    useEffect(() => {
-        if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            speechRecognition.current = new SpeechRecognition();
-            speechRecognition.current.continuous = false;
-            speechRecognition.current.interimResults = false;
+        setIsListening(!isListening);
+    };
+
+    const handleSubmit = async () => {
+        if (!spokenText.trim()) return;
+
+        setLoading(true);
+        try {
+            const genAI = new GoogleGenerativeAI('AIzaSyCu-RVi6xqkAMW9tvycx6CWeaaIC3uwZpg');
+            const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+            const prompt = `You are a helpful and empathetic nurse assistant. Please provide medical advice and information for the following query: ${spokenText}`;
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            setResponse(response.text());
             
-            speechRecognition.current.onresult = (event) => {
-                const transcript = event.results[0][0].transcript;
-                handleUserInput(transcript);
-            };
-            
-            speechRecognition.current.onerror = (event) => {
-                console.error('Speech recognition error:', event.error);
-                setIsListening(false);
-            };
-            
-            speechRecognition.current.onend = () => {
-                setIsListening(false);
-            };
+            // Optional: Convert response to speech
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(response.text());
+                window.speechSynthesis.speak(utterance);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            setResponse('I apologize, but I encountered an error. Please try again.');
+        } finally {
+            setLoading(false);
         }
-        
-        const currentSpeechRecognition = speechRecognition.current;
-        const currentSpeechSynthesis = speechSynthesis.current;
-        
-        return () => {
-            if (currentSpeechRecognition) {
-                currentSpeechRecognition.abort();
-            }
-            if (currentSpeechSynthesis) {
-                currentSpeechSynthesis.cancel();
-            }
-        };
-    }, [handleUserInput]);
+    };
 
     useEffect(() => {
         const randomGreeting = medicalKnowledge.greetings[Math.floor(Math.random() * medicalKnowledge.greetings.length)];
@@ -368,7 +386,7 @@ Available conditions:
     const handleKeyPress = (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            handleSend();
+            handleSubmit();
         }
     };
 
@@ -434,38 +452,32 @@ Available conditions:
                                 </div>
                             </div>
 
-                            <div className="chat-section">
-                                <div className="chat-messages">
-                                    {chatHistory.map((message, index) => (
-                                        <div key={index} className={`message ${message.type}`}>
-                                            <div className="message-content">
-                                                {message.content}
-                                            </div>
-                                        </div>
-                                    ))}
-                                    {loading && (
-                                        <div className="message bot">
-                                            <div className="message-content loading">
-                                                <span></span>
-                                                <span></span>
-                                                <span></span>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                                
-                                <div className="chat-input">
-                                    <textarea
-                                        value={input}
-                                        onChange={(e) => setInput(e.target.value)}
-                                        onKeyPress={handleKeyPress}
-                                        placeholder="Ask your health-related question..."
-                                        rows="3"
-                                    />
-                                    <button onClick={handleSend} disabled={loading}>
-                                        Send
+                            <div className="interaction-area">
+                                <div className="speech-input">
+                                    <button 
+                                        className={`mic-button ${isListening ? 'listening' : ''}`}
+                                        onClick={toggleListening}
+                                    >
+                                        {isListening ? <FaStop /> : <FaMicrophone />}
+                                        {isListening ? 'Stop' : 'Start Speaking'}
+                                    </button>
+                                    <div className="transcript">
+                                        {spokenText && <p>{spokenText}</p>}
+                                    </div>
+                                    <button 
+                                        className="submit-button"
+                                        onClick={handleSubmit}
+                                        disabled={!spokenText.trim() || loading}
+                                    >
+                                        {loading ? 'Processing...' : 'Get Response'}
                                     </button>
                                 </div>
+                                {response && (
+                                    <div className="response">
+                                        <h3>Nurse's Response:</h3>
+                                        <p>{response}</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -658,98 +670,94 @@ const AINurseStyled = styled.div`
         }
     }
 
-    .chat-section {
+    .interaction-area {
         flex: 1;
+    }
+
+    .speech-input {
         display: flex;
         flex-direction: column;
-        background: white;
-        border-radius: 8px;
-        border: 1px solid #eee;
-    }
-
-    .chat-messages {
-        flex: 1;
-        overflow-y: auto;
-        padding: 1rem;
-    }
-
-    .message {
-        margin-bottom: 1rem;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .message.user {
-        align-items: flex-end;
-    }
-
-    .message-content {
-        max-width: 70%;
-        padding: 0.8rem;
-        border-radius: 10px;
-        background: #f0f2f5;
-    }
-
-    .message.user .message-content {
-        background: #2c3e50;
-        color: white;
-    }
-
-    .chat-input {
-        padding: 1rem;
-        border-top: 1px solid #eee;
-        display: flex;
         gap: 1rem;
+        margin-bottom: 2rem;
     }
 
-    textarea {
-        flex: 1;
-        padding: 0.8rem;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        resize: none;
-    }
-
-    button {
-        padding: 0.8rem 1.5rem;
-        background: #2c3e50;
-        color: white;
+    .mic-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 1rem;
         border: none;
-        border-radius: 5px;
+        border-radius: 50px;
+        background: #6b21a8;
+        color: white;
         cursor: pointer;
-        transition: background 0.3s ease;
+        transition: all 0.3s ease;
 
         &:hover {
-            background: #34495e;
+            background: #7c3aed;
+        }
+
+        &.listening {
+            background: #dc2626;
+            animation: pulse 1.5s infinite;
+        }
+    }
+
+    .transcript {
+        min-height: 100px;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+        border: 1px solid #e9ecef;
+    }
+
+    .submit-button {
+        padding: 1rem;
+        border: none;
+        border-radius: 8px;
+        background: #2563eb;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &:hover:not(:disabled) {
+            background: #1d4ed8;
         }
 
         &:disabled {
-            background: #95a5a6;
+            background: #94a3b8;
             cursor: not-allowed;
         }
     }
 
-    .loading {
-        display: flex;
-        gap: 0.5rem;
-        justify-content: center;
-        align-items: center;
+    .response {
+        padding: 1.5rem;
+        background: #f0fdf4;
+        border-radius: 10px;
+        border: 1px solid #86efac;
+
+        h3 {
+            color: #166534;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            color: #374151;
+            line-height: 1.6;
+        }
     }
 
-    .loading span {
-        width: 8px;
-        height: 8px;
-        background: #2c3e50;
-        border-radius: 50%;
-        animation: bounce 1.4s infinite ease-in-out;
-    }
-
-    .loading span:nth-child(1) { animation-delay: -0.32s; }
-    .loading span:nth-child(2) { animation-delay: -0.16s; }
-
-    @keyframes bounce {
-        0%, 80%, 100% { transform: scale(0); }
-        40% { transform: scale(1); }
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.05);
+        }
+        100% {
+            transform: scale(1);
+        }
     }
 
     @media (max-width: 768px) {
