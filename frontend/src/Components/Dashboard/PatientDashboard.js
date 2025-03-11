@@ -1,120 +1,80 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import { Chart as ChartJS } from 'chart.js/auto';
-import { Line } from 'react-chartjs-2';
+import { FaStethoscope, FaHospital, FaRobot } from 'react-icons/fa';
 
 function PatientDashboard() {
     const [user, setUser] = useState(null);
-    const [appointments, setAppointments] = useState([]);
-    const [healthMetrics, setHealthMetrics] = useState({
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-        datasets: [
-            {
-                label: 'Health Score',
-                data: [65, 70, 68, 72, 75, 73],
-                borderColor: '#9333ea',
-                tension: 0.4
-            }
-        ]
-    });
     const navigate = useNavigate();
 
     useEffect(() => {
         const userData = localStorage.getItem('user');
-        if (userData) {
-            setUser(JSON.parse(userData));
-        } else {
+        if (!userData) {
             navigate('/');
+        } else {
+            setUser(JSON.parse(userData));
         }
-        
-        // Mock appointments data
-        setAppointments([
-            {
-                id: 1,
-                doctor: "Dr. Sarah Johnson",
-                date: "2024-02-20",
-                time: "10:00 AM",
-                status: "Upcoming"
-            },
-            {
-                id: 2,
-                doctor: "Dr. Michael Chen",
-                date: "2024-02-15",
-                time: "2:30 PM",
-                status: "Completed"
-            }
-        ]);
     }, [navigate]);
+
+    const services = [
+        {
+            id: 1,
+            title: 'Mind Bot',
+            description: 'Your AI Companion for Mental Wellness',
+            icon: <FaStethoscope />,
+            link: '/mindbot',
+            color: '#9333ea'
+        },
+        {
+            id: 2,
+            title: 'Consult Doctor',
+            description: 'Connect with Healthcare Professionals',
+            icon: <FaRobot />,
+            link: '/consult-doctor',
+            color: '#2563eb'
+        },
+        {
+            id: 3,
+            title: 'Nearby Hospitals',
+            description: 'Find Medical Facilities Near You',
+            icon: <FaHospital />,
+            link: '/nearby-hospitals',
+            color: '#16a34a'
+        }
+    ];
 
     return (
         <DashboardStyled>
             <div className="dashboard-container">
-                <div className="user-profile">
-                    {user && (
-                        <>
-                            <img src={user.picture} alt={user.name} className="profile-image" />
-                            <div className="user-info">
-                                <h2>{user.name}</h2>
-                                <p>{user.email}</p>
-                            </div>
-                        </>
-                    )}
+                <div className="welcome-section">
+                    <div className="user-info">
+                        {user && (
+                            <>
+                                <img src={user.picture} alt={user.name} />
+                                <div className="text">
+                                    <h1>Welcome back, {user.name}!</h1>
+                                    <p>How can we help you today?</p>
+                                </div>
+                            </>
+                        )}
+                    </div>
                 </div>
 
-                <div className="dashboard-grid">
-                    <div className="appointments-section">
-                        <h3>Your Appointments</h3>
-                        <div className="appointments-list">
-                            {appointments.map(appointment => (
-                                <div key={appointment.id} className="appointment-card">
-                                    <div className="appointment-header">
-                                        <h4>{appointment.doctor}</h4>
-                                        <span className={`status ${appointment.status.toLowerCase()}`}>
-                                            {appointment.status}
-                                        </span>
-                                    </div>
-                                    <div className="appointment-details">
-                                        <p>Date: {appointment.date}</p>
-                                        <p>Time: {appointment.time}</p>
-                                    </div>
-                                </div>
-                            ))}
+                <div className="services-grid">
+                    {services.map(service => (
+                        <div 
+                            key={service.id} 
+                            className="service-card"
+                            onClick={() => navigate(service.link)}
+                            style={{ '--card-color': service.color }}
+                        >
+                            <div className="icon-wrapper">
+                                {service.icon}
+                            </div>
+                            <h2>{service.title}</h2>
+                            <p>{service.description}</p>
                         </div>
-                    </div>
-
-                    <div className="health-metrics">
-                        <h3>Health Metrics</h3>
-                        <div className="chart-container">
-                            <Line data={healthMetrics} options={{
-                                responsive: true,
-                                plugins: {
-                                    legend: {
-                                        position: 'top',
-                                    },
-                                    title: {
-                                        display: true,
-                                        text: 'Monthly Health Score'
-                                    }
-                                }
-                            }} />
-                        </div>
-                    </div>
-
-                    <div className="quick-actions">
-                        <h3>Quick Actions</h3>
-                        <div className="action-buttons">
-                            <button onClick={() => navigate('/doctor-consultation')}>
-                                Book Appointment
-                            </button>
-                            <button onClick={() => navigate('/ainurse')}>
-                                Consult AI Nurse
-                            </button>
-                            <button onClick={() => navigate('/mindbot')}>
-                                Chat with Mind Bot
-                            </button>
-                        </div>
-                    </div>
+                    ))}
                 </div>
             </div>
         </DashboardStyled>
@@ -122,133 +82,126 @@ function PatientDashboard() {
 }
 
 const DashboardStyled = styled.div`
+    min-height: 100vh;
+    background: #f3f4f6;
+    padding: 2rem;
+
     .dashboard-container {
-        padding: 2rem;
         max-width: 1200px;
         margin: 0 auto;
     }
 
-    .user-profile {
-        display: flex;
-        align-items: center;
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-        padding: 1.5rem;
+    .welcome-section {
         background: white;
-        border-radius: 12px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-
-        .profile-image {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 
         .user-info {
-            h2 {
-                margin: 0;
-                color: #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+
+            img {
+                width: 80px;
+                height: 80px;
+                border-radius: 50%;
+                object-fit: cover;
             }
 
-            p {
-                margin: 0.5rem 0 0;
-                color: #718096;
+            .text {
+                h1 {
+                    margin: 0;
+                    font-size: 2rem;
+                    color: #1f2937;
+                }
+
+                p {
+                    margin: 0.5rem 0 0;
+                    color: #6b7280;
+                    font-size: 1.1rem;
+                }
             }
         }
     }
 
-    .dashboard-grid {
+    .services-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
         gap: 2rem;
-    }
 
-    .appointments-section, .health-metrics, .quick-actions {
-        background: white;
-        padding: 1.5rem;
-        border-radius: 12px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-
-        h3 {
-            margin: 0 0 1.5rem;
-            color: #2d3748;
-        }
-    }
-
-    .appointment-card {
-        background: #f7fafc;
-        padding: 1rem;
-        border-radius: 8px;
-        margin-bottom: 1rem;
-
-        .appointment-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
-
-            h4 {
-                margin: 0;
-                color: #2d3748;
-            }
-
-            .status {
-                padding: 0.25rem 0.75rem;
-                border-radius: 999px;
-                font-size: 0.875rem;
-
-                &.upcoming {
-                    background: #9333ea;
-                    color: white;
-                }
-
-                &.completed {
-                    background: #10b981;
-                    color: white;
-                }
-            }
-        }
-
-        .appointment-details {
-            p {
-                margin: 0.25rem 0;
-                color: #718096;
-            }
-        }
-    }
-
-    .chart-container {
-        height: 300px;
-    }
-
-    .action-buttons {
-        display: grid;
-        gap: 1rem;
-
-        button {
-            padding: 1rem;
-            border: none;
-            border-radius: 8px;
-            background: #9333ea;
-            color: white;
-            font-weight: 500;
+        .service-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 
             &:hover {
-                background: #7e22ce;
+                transform: translateY(-5px);
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+                .icon-wrapper {
+                    background: var(--card-color);
+                    color: white;
+                }
+            }
+
+            .icon-wrapper {
+                width: 64px;
+                height: 64px;
+                margin: 0 auto 1.5rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: #f3f4f6;
+                border-radius: 16px;
+                transition: all 0.3s ease;
+                color: var(--card-color);
+
+                svg {
+                    font-size: 1.8rem;
+                }
+            }
+
+            h2 {
+                margin: 0 0 1rem;
+                color: #1f2937;
+                font-size: 1.5rem;
+            }
+
+            p {
+                margin: 0;
+                color: #6b7280;
+                font-size: 1rem;
+                line-height: 1.5;
             }
         }
     }
 
     @media (max-width: 768px) {
-        .dashboard-container {
-            padding: 1rem;
+        padding: 1rem;
+
+        .welcome-section {
+            padding: 1.5rem;
+
+            .user-info {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+
+                .text h1 {
+                    font-size: 1.5rem;
+                }
+            }
         }
 
-        .dashboard-grid {
+        .services-grid {
             grid-template-columns: 1fr;
+            gap: 1rem;
         }
     }
 `;
