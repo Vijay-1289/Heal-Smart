@@ -11,7 +11,7 @@
 [build.environment]
   NODE_VERSION = "18"
   CI = "false"
-  NPM_FLAGS = "--no-audit --no-fund"
+  NPM_FLAGS = "--no-audit --no-fund --legacy-peer-deps"
 
 [[headers]]
   for = "/*"

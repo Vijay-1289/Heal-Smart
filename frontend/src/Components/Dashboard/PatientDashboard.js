@@ -1,91 +1,120 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
+import { Chart as ChartJS } from 'chart.js/auto';
+import { Line } from 'react-chartjs-2';
 
-function PatientDashboard({ user }) {
-    const [healthHistory, setHealthHistory] = useState([]);
-    const [loading, setLoading] = useState(true);
+function PatientDashboard() {
+    const [user, setUser] = useState(null);
+    const [appointments, setAppointments] = useState([]);
+    const [healthMetrics, setHealthMetrics] = useState({
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [
+            {
+                label: 'Health Score',
+                data: [65, 70, 68, 72, 75, 73],
+                borderColor: '#9333ea',
+                tension: 0.4
+            }
+        ]
+    });
+    const navigate = useNavigate();
 
     useEffect(() => {
-        fetchHealthHistory();
-    }, []);
-
-    const fetchHealthHistory = async () => {
-        try {
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users/${user.email}/health`, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
-            const data = await response.json();
-            setHealthHistory(data.healthHistory || []);
-            setLoading(false);
-        } catch (error) {
-            console.error('Error fetching health history:', error);
-            setLoading(false);
+        const userData = localStorage.getItem('user');
+        if (userData) {
+            setUser(JSON.parse(userData));
+        } else {
+            navigate('/');
         }
-    };
+        
+        // Mock appointments data
+        setAppointments([
+            {
+                id: 1,
+                doctor: "Dr. Sarah Johnson",
+                date: "2024-02-20",
+                time: "10:00 AM",
+                status: "Upcoming"
+            },
+            {
+                id: 2,
+                doctor: "Dr. Michael Chen",
+                date: "2024-02-15",
+                time: "2:30 PM",
+                status: "Completed"
+            }
+        ]);
+    }, [navigate]);
 
     return (
         <DashboardStyled>
-            <div className="dashboard-header">
-                <div className="user-info">
-                    <img src={user.picture} alt={user.name} className="profile-pic" />
-                    <div className="user-details">
-                        <h2>{user.name}</h2>
-                        <p>{user.email}</p>
-                    </div>
-                </div>
-            </div>
-
-            <div className="dashboard-content">
-                <div className="health-summary">
-                    <h3>Health Summary</h3>
-                    <div className="summary-cards">
-                        <div className="summary-card">
-                            <h4>Recent Conditions</h4>
-                            <p>{healthHistory.length} conditions recorded</p>
-                        </div>
-                        <div className="summary-card">
-                            <h4>Last Consultation</h4>
-                            <p>{healthHistory[0]?.date ? new Date(healthHistory[0].date).toLocaleDateString() : 'No consultations yet'}</p>
-                        </div>
-                    </div>
+            <div className="dashboard-container">
+                <div className="user-profile">
+                    {user && (
+                        <>
+                            <img src={user.picture} alt={user.name} className="profile-image" />
+                            <div className="user-info">
+                                <h2>{user.name}</h2>
+                                <p>{user.email}</p>
+                            </div>
+                        </>
+                    )}
                 </div>
 
-                <div className="health-history">
-                    <h3>Health History</h3>
-                    {loading ? (
-                        <p>Loading health history...</p>
-                    ) : healthHistory.length > 0 ? (
-                        <div className="history-list">
-                            {healthHistory.map((record, index) => (
-                                <div key={index} className="history-item">
-                                    <div className="history-header">
-                                        <h4>{record.condition}</h4>
-                                        <span>{new Date(record.date).toLocaleDateString()}</span>
+                <div className="dashboard-grid">
+                    <div className="appointments-section">
+                        <h3>Your Appointments</h3>
+                        <div className="appointments-list">
+                            {appointments.map(appointment => (
+                                <div key={appointment.id} className="appointment-card">
+                                    <div className="appointment-header">
+                                        <h4>{appointment.doctor}</h4>
+                                        <span className={`status ${appointment.status.toLowerCase()}`}>
+                                            {appointment.status}
+                                        </span>
                                     </div>
-                                    <div className="measures">
-                                        <h5>Control Measures:</h5>
-                                        <ul>
-                                            {record.measures.map((measure, i) => (
-                                                <li key={i}>{measure}</li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                    <div className="prevention">
-                                        <h5>Prevention Tips:</h5>
-                                        <ul>
-                                            {record.prevention.map((tip, i) => (
-                                                <li key={i}>{tip}</li>
-                                            ))}
-                                        </ul>
+                                    <div className="appointment-details">
+                                        <p>Date: {appointment.date}</p>
+                                        <p>Time: {appointment.time}</p>
                                     </div>
                                 </div>
                             ))}
                         </div>
-                    ) : (
-                        <p>No health history available</p>
-                    )}
+                    </div>
+
+                    <div className="health-metrics">
+                        <h3>Health Metrics</h3>
+                        <div className="chart-container">
+                            <Line data={healthMetrics} options={{
+                                responsive: true,
+                                plugins: {
+                                    legend: {
+                                        position: 'top',
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Monthly Health Score'
+                                    }
+                                }
+                            }} />
+                        </div>
+                    </div>
+
+                    <div className="quick-actions">
+                        <h3>Quick Actions</h3>
+                        <div className="action-buttons">
+                            <button onClick={() => navigate('/doctor-consultation')}>
+                                Book Appointment
+                            </button>
+                            <button onClick={() => navigate('/ainurse')}>
+                                Consult AI Nurse
+                            </button>
+                            <button onClick={() => navigate('/mindbot')}>
+                                Chat with Mind Bot
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </DashboardStyled>
@@ -93,153 +122,133 @@ function PatientDashboard({ user }) {
 }
 
 const DashboardStyled = styled.div`
-    padding: 2rem;
-    max-width: 1200px;
-    margin: 0 auto;
-
-    .dashboard-header {
-        background: white;
+    .dashboard-container {
         padding: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .user-profile {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        background: white;
         border-radius: 12px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        margin-bottom: 2rem;
+
+        .profile-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
 
         .user-info {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-
-            .profile-pic {
-                width: 80px;
-                height: 80px;
-                border-radius: 50%;
+            h2 {
+                margin: 0;
+                color: #2d3748;
             }
 
-            .user-details {
-                h2 {
-                    margin: 0;
-                    color: #2d3748;
-                }
-                p {
-                    margin: 0.5rem 0 0;
-                    color: #718096;
-                }
+            p {
+                margin: 0.5rem 0 0;
+                color: #718096;
             }
         }
     }
 
-    .dashboard-content {
+    .dashboard-grid {
         display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
         gap: 2rem;
+    }
 
-        .health-summary {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    .appointments-section, .health-metrics, .quick-actions {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 
-            h3 {
-                margin: 0 0 1.5rem;
+        h3 {
+            margin: 0 0 1.5rem;
+            color: #2d3748;
+        }
+    }
+
+    .appointment-card {
+        background: #f7fafc;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+
+        .appointment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+
+            h4 {
+                margin: 0;
                 color: #2d3748;
             }
 
-            .summary-cards {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                gap: 1.5rem;
+            .status {
+                padding: 0.25rem 0.75rem;
+                border-radius: 999px;
+                font-size: 0.875rem;
 
-                .summary-card {
-                    background: #f7fafc;
-                    padding: 1.5rem;
-                    border-radius: 8px;
+                &.upcoming {
+                    background: #9333ea;
+                    color: white;
+                }
 
-                    h4 {
-                        margin: 0 0 0.5rem;
-                        color: #4a5568;
-                    }
-
-                    p {
-                        margin: 0;
-                        color: #718096;
-                    }
+                &.completed {
+                    background: #10b981;
+                    color: white;
                 }
             }
         }
 
-        .health-history {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-
-            h3 {
-                margin: 0 0 1.5rem;
-                color: #2d3748;
+        .appointment-details {
+            p {
+                margin: 0.25rem 0;
+                color: #718096;
             }
+        }
+    }
 
-            .history-list {
-                display: grid;
-                gap: 1.5rem;
+    .chart-container {
+        height: 300px;
+    }
 
-                .history-item {
-                    background: #f7fafc;
-                    padding: 1.5rem;
-                    border-radius: 8px;
+    .action-buttons {
+        display: grid;
+        gap: 1rem;
 
-                    .history-header {
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                        margin-bottom: 1rem;
+        button {
+            padding: 1rem;
+            border: none;
+            border-radius: 8px;
+            background: #9333ea;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
 
-                        h4 {
-                            margin: 0;
-                            color: #4a5568;
-                            text-transform: capitalize;
-                        }
-
-                        span {
-                            color: #718096;
-                            font-size: 0.9rem;
-                        }
-                    }
-
-                    .measures, .prevention {
-                        margin-top: 1rem;
-
-                        h5 {
-                            margin: 0 0 0.5rem;
-                            color: #4a5568;
-                        }
-
-                        ul {
-                            margin: 0;
-                            padding-left: 1.5rem;
-                            color: #718096;
-
-                            li {
-                                margin-bottom: 0.25rem;
-                            }
-                        }
-                    }
-                }
+            &:hover {
+                background: #7e22ce;
             }
         }
     }
 
     @media (max-width: 768px) {
-        padding: 1rem;
-
-        .dashboard-header {
-            padding: 1.5rem;
+        .dashboard-container {
+            padding: 1rem;
         }
 
-        .dashboard-content {
-            gap: 1rem;
-
-            .health-summary, .health-history {
-                padding: 1.5rem;
-            }
+        .dashboard-grid {
+            grid-template-columns: 1fr;
         }
     }
 `;
