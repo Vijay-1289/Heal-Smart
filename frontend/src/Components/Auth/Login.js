@@ -23,20 +23,22 @@ function Login() {
                         'Accept': 'application/json',
                         'Origin': 'https://heal-smart-heal.netlify.app'
                     },
-                    credentials: 'include',
+                    mode: 'cors',
+                    credentials: 'omit',
                     body: JSON.stringify({
                         credential: response.credential,
+                        clientId: CLIENT_ID
                     }),
                 });
 
                 if (!res.ok) {
-                    const errorData = await res.json().catch(() => ({}));
+                    const errorText = await res.text();
                     console.error('Server error response:', {
                         status: res.status,
                         statusText: res.statusText,
-                        error: errorData
+                        error: errorText
                     });
-                    throw new Error(errorData.message || `Server error: ${res.status}`);
+                    throw new Error(`Server error: ${errorText || res.statusText}`);
                 }
 
                 const data = await res.json();
@@ -53,9 +55,9 @@ function Login() {
             } catch (error) {
                 console.error('Login failed:', error);
                 if (error.message === 'Failed to fetch') {
-                    toast.error('Unable to connect to the server. Please try again later.');
+                    toast.error('Unable to connect to the server. Please check if the backend server is running.');
                 } else {
-                    toast.error(`Login failed: ${error.message || 'Please try again.'}`);
+                    toast.error(`Login failed: ${error.message}`);
                 }
             }
         };
