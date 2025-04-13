@@ -2,224 +2,170 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { FaBars, FaTimes, FaUser, FaSignOutAlt } from 'react-icons/fa';
-import { useAuth } from '../../context/Context';
+import { useAuth } from '../../context/AuthContext';
 
-const NavbarStyled = styled.nav`
-    background: ${({ theme }) => theme.colors.primary};
-    padding: 1rem 2rem;
+const NavbarContainer = styled.nav`
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
-    z-index: 1000;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+    z-index: 1000;
+`;
 
-    .navbar-container {
-        max-width: 1200px;
-        margin: 0 auto;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
+const NavContent = styled.div`
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+`;
 
-    .logo {
-        color: white;
-        font-size: 1.5rem;
-        font-weight: bold;
-        text-decoration: none;
-    }
+const Logo = styled(Link)`
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #4CAF50;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 
-    .nav-links {
-        display: flex;
-        gap: 2rem;
-        align-items: center;
-
-        @media (max-width: 768px) {
-            display: none;
-        }
-
-        a {
-            color: white;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s;
-
-            &:hover {
-                color: ${({ theme }) => theme.colors.secondary};
-            }
-        }
-    }
-
-    .mobile-menu-btn {
-        display: none;
-        color: white;
-        font-size: 1.5rem;
-        cursor: pointer;
-
-        @media (max-width: 768px) {
-            display: block;
-        }
-    }
-
-    .mobile-menu {
-        position: fixed;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        width: 250px;
-        background: white;
-        padding: 2rem;
-        transform: translateX(100%);
-        transition: transform 0.3s;
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-
-        &.active {
-            transform: translateX(0);
-        }
-
-        .close-btn {
-            align-self: flex-end;
-            color: ${({ theme }) => theme.colors.primary};
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
-
-        a {
-            color: ${({ theme }) => theme.colors.primary};
-            text-decoration: none;
-            font-weight: 500;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid #eee;
-        }
-    }
-
-    .user-menu {
-        position: relative;
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-
-        .user-icon {
-            color: white;
-            font-size: 1.2rem;
-            cursor: pointer;
-        }
-
-        .dropdown {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            background: white;
-            border-radius: 5px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 1rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            min-width: 150px;
-
-            button {
-                background: none;
-                border: none;
-                color: ${({ theme }) => theme.colors.primary};
-                cursor: pointer;
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
-                padding: 0.5rem;
-
-                &:hover {
-                    background: #f5f5f5;
-                }
-            }
-        }
+    @media (max-width: 768px) {
+        font-size: 1.2rem;
     }
 `;
 
-function Navbar() {
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-    const { isAuthenticated, logout } = useAuth();
+const MenuButton = styled.button`
+    display: none;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #4CAF50;
+    cursor: pointer;
+    padding: 0.5rem;
+    z-index: 1001;
+
+    @media (max-width: 768px) {
+        display: block;
+    }
+`;
+
+const NavLinks = styled.div`
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+
+    @media (max-width: 768px) {
+        position: fixed;
+        top: 0;
+        right: ${({ isOpen }) => (isOpen ? '0' : '-100%')};
+        height: 100vh;
+        width: 70%;
+        max-width: 300px;
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(10px);
+        flex-direction: column;
+        padding: 5rem 2rem;
+        transition: right 0.3s ease-in-out;
+        box-shadow: ${({ isOpen }) => (isOpen ? '-5px 0 15px rgba(0, 0, 0, 0.1)' : 'none')};
+    }
+`;
+
+const NavLink = styled(Link)`
+    color: #333;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: #4CAF50;
+        color: white;
+    }
+
+    @media (max-width: 768px) {
+        width: 100%;
+        text-align: center;
+        padding: 1rem;
+    }
+`;
+
+const LogoutButton = styled.button`
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: #c82333;
+    }
+
+    @media (max-width: 768px) {
+        width: 100%;
+        padding: 1rem;
+    }
+`;
+
+const Overlay = styled.div`
+    display: none;
+    @media (max-width: 768px) {
+        display: ${({ isOpen }) => (isOpen ? 'block' : 'none')};
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+    }
+`;
+
+const Navbar = () => {
+    const [isOpen, setIsOpen] = useState(false);
+    const { user, logout } = useAuth();
     const navigate = useNavigate();
 
     const handleLogout = () => {
         logout();
-        navigate('/login');
+        navigate('/');
+    };
+
+    const toggleMenu = () => {
+        setIsOpen(!isOpen);
+    };
+
+    const closeMenu = () => {
+        setIsOpen(false);
     };
 
     return (
-        <NavbarStyled>
-            <div className="navbar-container">
-                <Link to="/" className="logo">
-                    HealSmart
-                </Link>
-
-                <div className="nav-links">
-                    {isAuthenticated ? (
-                        <>
-                            <Link to="/dashboard">Dashboard</Link>
-                            <Link to="/medicine">Medicine</Link>
-                            <Link to="/ai-nurse">AI Nurse</Link>
-                            <Link to="/mindbot">MindBot</Link>
-                            <div className="user-menu">
-                                <FaUser 
-                                    className="user-icon" 
-                                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                                />
-                                {isUserMenuOpen && (
-                                    <div className="dropdown">
-                                        <button onClick={handleLogout}>
-                                            <FaSignOutAlt />
-                                            Logout
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        </>
-                    ) : (
-                        <>
-                            <Link to="/login">Login</Link>
-                            <Link to="/register">Register</Link>
-                        </>
-                    )}
-                </div>
-
-                <FaBars 
-                    className="mobile-menu-btn" 
-                    onClick={() => setIsMobileMenuOpen(true)}
-                />
-            </div>
-
-            <div className={`mobile-menu ${isMobileMenuOpen ? 'active' : ''}`}>
-                <FaTimes 
-                    className="close-btn" 
-                    onClick={() => setIsMobileMenuOpen(false)}
-                />
-                {isAuthenticated ? (
-                    <>
-                        <Link to="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>Dashboard</Link>
-                        <Link to="/medicine" onClick={() => setIsMobileMenuOpen(false)}>Medicine</Link>
-                        <Link to="/ai-nurse" onClick={() => setIsMobileMenuOpen(false)}>AI Nurse</Link>
-                        <Link to="/mindbot" onClick={() => setIsMobileMenuOpen(false)}>MindBot</Link>
-                        <button onClick={() => {
-                            handleLogout();
-                            setIsMobileMenuOpen(false);
-                        }}>
-                            <FaSignOutAlt />
-                            Logout
-                        </button>
-                    </>
-                ) : (
-                    <>
-                        <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>Login</Link>
-                        <Link to="/register" onClick={() => setIsMobileMenuOpen(false)}>Register</Link>
-                    </>
-                )}
-            </div>
-        </NavbarStyled>
+        <>
+            <NavbarContainer>
+                <NavContent>
+                    <Logo to="/">Heal Smart</Logo>
+                    <MenuButton onClick={toggleMenu}>
+                        {isOpen ? <FaTimes /> : <FaBars />}
+                    </MenuButton>
+                    <NavLinks isOpen={isOpen}>
+                        <NavLink to="/dashboard" onClick={closeMenu}>Dashboard</NavLink>
+                        <NavLink to="/ainurse" onClick={closeMenu}>AI Nurse</NavLink>
+                        <NavLink to="/mindbot" onClick={closeMenu}>MindBot</NavLink>
+                        <NavLink to="/medicine" onClick={closeMenu}>Medicine</NavLink>
+                        {user && <LogoutButton onClick={handleLogout}>Logout</LogoutButton>}
+                    </NavLinks>
+                </NavContent>
+            </NavbarContainer>
+            <Overlay isOpen={isOpen} onClick={closeMenu} />
+        </>
     );
-}
+};
 
 export default Navbar; 

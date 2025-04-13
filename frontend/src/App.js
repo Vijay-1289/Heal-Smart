@@ -37,77 +37,83 @@ const ProtectedRoute = ({ children }) => {
     return children;
 };
 
+const AppContainer = styled.div`
+  padding-top: 4rem; // Add padding to account for fixed navbar
+  min-height: 100vh;
+  background: #f8f9fa;
+
+  @media (max-width: 768px) {
+    padding-top: 3.5rem;
+  }
+`;
+
 function App() {
     return (
         <ThemeProvider theme={theme}>
             <GlobalStyle />
             <AuthProvider>
                 <ContextProvider>
-                    <AppStyled bg={bg}>
-                        <MainLayout>
-                            <Navigation />
-                            <main>
-                                <Routes>
-                                    {/* Public Routes */}
-                                    <Route path="/" element={<Home />} />
-                                    <Route path="/login" element={<Login />} />
-                                    <Route path="/register" element={<Register />} />
-                                    
-                                    {/* Protected Routes */}
-                                    <Route path="/dashboard" element={
-                                        <ProtectedRoute>
-                                            <PatientDashboard />
-                                        </ProtectedRoute>
-                                    } />
-                                    <Route path="/medicine" element={
-                                        <ProtectedRoute>
-                                            <Medicine />
-                                        </ProtectedRoute>
-                                    } />
-                                    <Route path="/ai-nurse" element={
-                                        <ProtectedRoute>
-                                            <AINurse />
-                                        </ProtectedRoute>
-                                    } />
-                                    <Route path="/mindbot" element={
-                                        <ProtectedRoute>
-                                            <MindBot />
-                                        </ProtectedRoute>
-                                    } />
-                                    <Route path="/ainurse" element={
-                                        <ProtectedRoute>
-                                            <AINurse />
-                                        </ProtectedRoute>
-                                    } />
-                                    <Route path="/mental-wellness" element={
-                                        <ProtectedRoute>
-                                            <MentalWellness />
-                                        </ProtectedRoute>
-                                    } />
-                                    <Route path="/consult-doctor" element={
-                                        <ProtectedRoute>
-                                            <ConsultDoctor />
-                                        </ProtectedRoute>
-                                    } />
-                                    <Route path="/doctor-details" element={
-                                        <ProtectedRoute>
-                                            <DoctorDetails />
-                                        </ProtectedRoute>
-                                    } />
-                                    <Route path="/nearby-hospitals" element={
-                                        <ProtectedRoute>
-                                            <NearbyHospitals />
-                                        </ProtectedRoute>
-                                    } />
-                                    <Route path="/doctor-dashboard" element={
-                                        <ProtectedRoute>
-                                            <DoctorDashboard />
-                                        </ProtectedRoute>
-                                    } />
-                                    <Route path="*" element={<Navigate to="/" replace />} />
-                                </Routes>
-                            </main>
-                        </MainLayout>
+                    <AppContainer>
+                        <Navbar />
+                        <Routes>
+                            {/* Public Routes */}
+                            <Route path="/" element={<Home />} />
+                            <Route path="/login" element={<Login />} />
+                            <Route path="/register" element={<Register />} />
+                            
+                            {/* Protected Routes */}
+                            <Route path="/dashboard" element={
+                                <ProtectedRoute>
+                                    <PatientDashboard />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/medicine" element={
+                                <ProtectedRoute>
+                                    <Medicine />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/ai-nurse" element={
+                                <ProtectedRoute>
+                                    <AINurse />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/mindbot" element={
+                                <ProtectedRoute>
+                                    <MindBot />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/ainurse" element={
+                                <ProtectedRoute>
+                                    <AINurse />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/mental-wellness" element={
+                                <ProtectedRoute>
+                                    <MentalWellness />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/consult-doctor" element={
+                                <ProtectedRoute>
+                                    <ConsultDoctor />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/doctor-details" element={
+                                <ProtectedRoute>
+                                    <DoctorDetails />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/nearby-hospitals" element={
+                                <ProtectedRoute>
+                                    <NearbyHospitals />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/doctor-dashboard" element={
+                                <ProtectedRoute>
+                                    <DoctorDashboard />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="*" element={<Navigate to="/" replace />} />
+                        </Routes>
                         <ToastContainer
                             position="top-right"
                             autoClose={5000}
@@ -120,7 +126,7 @@ function App() {
                             pauseOnHover
                             theme="light"
                         />
-                    </AppStyled>
+                    </AppContainer>
                 </ContextProvider>
             </AuthProvider>
         </ThemeProvider>
