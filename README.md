@@ -1,42 +1,55 @@
-# 🚀 HealSmart – AI-Powered Digital Healthcare Assistant  
+# Heal-Smart
 
-HealSmart is an innovative AI-powered medical assistant designed to enhance healthcare accessibility and efficiency. By integrating advanced artificial intelligence, HealSmart empowers users with real-time medical insights, mental wellness support, and seamless connectivity with healthcare providers.  
+A modern healthcare application featuring AI-powered medical assistance and mental health support.
 
-## 🌟 Key Features  
+## Features
 
-### 🧠 Mind-Bot  
-- AI-driven mental wellness companion  
-- Provides empathetic support through intelligent conversations  
-- Helps users manage stress and loneliness  
+- **AI Nurse**: A voice-enabled medical assistant that provides structured medical advice
+  - Voice interaction for hands-free use
+  - Structured responses with medications, precautions, and emergency care information
+  - Real-time speech synthesis for responses
 
-### 🏥 Nearby Hospitals  
-- Instantly locates the nearest hospitals and healthcare facilities  
-- Ensures quick access to medical assistance  
+- **Mind Bot**: A mental health chatbot providing emotional support and guidance
+  - Modern chat interface inspired by Google Gemini
+  - Structured responses with coping strategies and lifestyle changes
+  - Emergency assistance guidance
 
-### 🩺 Consult Doctor  
-- Smart doctor discovery and appointment booking  
-- Connects users with the right specialists effortlessly  
+## Tech Stack
 
-### 👩‍⚕️ AI Virtual Nurse Assistant  
-- Voice-enabled AI nurse providing real-time health guidance  
-- Suggests disease prevention tips and personalized wellness strategies  
+- React.js
+- Styled Components
+- Web Speech API
+- OpenAI API for AI responses
 
-## 🚀 How It Works  
-1. Sign in to HealSmart and input basic health details  
-2. Access AI-driven insights through Mind-Bot or the Virtual Nurse Assistant  
-3. Find nearby hospitals and book appointments with specialists  
-4. Get personalized health recommendations to improve well-being  
+## Getting Started
 
-## 🛠️ Tech Stack  
-- **Frontend**: React.js, Tailwind CSS  
-- **Backend**: Node.js, Express.js  
-- **AI & ML**: TensorFlow, OpenAI API  
-- **Database**: MongoDB  
-- **Cloud Services**: Firebase, AWS  
+1. Clone the repository
+```bash
+git clone https://github.com/yourusername/Heal-Smart.git
+cd Heal-Smart
+```
 
-## 📌 Installation  
+2. Install dependencies
+```bash
+cd frontend
+npm install
+```
 
-1. Clone the repository:  
-   ```bash
-   git clone https://github.com/Vijay-1289/HealSmart.git
-   cd HealSmart
+3. Set up environment variables
+Create a `.env` file in the frontend directory with:
+```
+REACT_APP_OPENAI_API_KEY=your_api_key_here
+```
+
+4. Start the development server
+```bash
+npm start
+```
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

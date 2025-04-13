@@ -1,66 +1,5 @@
-import React from 'react';
-import styled, { keyframes } from 'styled-components';
-
-const NurseAvatar = ({ isSpeaking, isListening }) => {
-    return (
-        <NurseAvatarStyled isSpeaking={isSpeaking} isListening={isListening}>
-            <div className="nurse-container">
-                <div className="nurse-image">
-                    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                        {/* Hair */}
-                        <path d="M60 80C60 50 90 30 100 30C110 30 140 50 140 80C140 90 135 100 130 105C125 110 120 115 100 115C80 115 75 110 70 105C65 100 60 90 60 80Z" fill="#6B4F4F"/>
-                        
-                        {/* Face */}
-                        <circle cx="100" cy="80" r="30" fill="#FFE5D9"/>
-                        
-                        {/* Eyes */}
-                        <g className="eyes">
-                            <circle cx="90" cy="75" r="3" fill="#2D3436"/>
-                            <circle cx="110" cy="75" r="3" fill="#2D3436"/>
-                            {/* Eye shine */}
-                            <circle cx="91" cy="74" r="1" fill="#FFFFFF"/>
-                            <circle cx="111" cy="74" r="1" fill="#FFFFFF"/>
-                            {/* Eyelashes */}
-                            <path d="M87 72L85 70M93 72L95 70" stroke="#2D3436" strokeWidth="1"/>
-                            <path d="M107 72L105 70M113 72L115 70" stroke="#2D3436" strokeWidth="1"/>
-                        </g>
-                        
-                        {/* Blush */}
-                        <circle cx="85" cy="85" r="5" fill="#FFB6C1" opacity="0.5"/>
-                        <circle cx="115" cy="85" r="5" fill="#FFB6C1" opacity="0.5"/>
-                        
-                        {/* Mouth */}
-                        <path className="mouth" d="M95 90Q100 95 105 90" stroke="#2D3436" fill="none" strokeWidth="2" strokeLinecap="round"/>
-                        
-                        {/* Nurse Cap */}
-                        <path d="M70 60C70 50 80 40 100 40C120 40 130 50 130 60C130 65 125 70 100 70C75 70 70 65 70 60Z" fill="#FFFFFF"/>
-                        <path d="M85 55H115" stroke="#FF0000" strokeWidth="3"/>
-                        <circle cx="100" cy="55" r="5" fill="#FF0000"/>
-                        
-                        {/* Uniform */}
-                        <path d="M70 105C70 105 80 120 100 120C120 120 130 105 130 105L140 150H60L70 105Z" fill="#FFFFFF"/>
-                        <path d="M85 105L90 150H110L115 105" fill="#FF0000"/>
-                        
-                        {/* Collar */}
-                        <path d="M85 105C85 105 95 110 100 110C105 110 115 105 115 105" stroke="#FF0000" strokeWidth="3"/>
-                    </svg>
-                </div>
-                {isListening && (
-                    <div className="listening-indicator">
-                        <div className="pulse" />
-                    </div>
-                )}
-                {isSpeaking && (
-                    <div className="speaking-indicator">
-                        <div className="wave" />
-                        <div className="wave" />
-                        <div className="wave" />
-                    </div>
-                )}
-            </div>
-        </NurseAvatarStyled>
-    );
-};
+import React, { useEffect, useState } from 'react';
+import styled, { keyframes, css } from 'styled-components';
 
 const pulse = keyframes`
     0% {
@@ -104,6 +43,86 @@ const blink = keyframes`
     }
 `;
 
+const nod = keyframes`
+    0%, 100% {
+        transform: rotate(0deg);
+    }
+    50% {
+        transform: rotate(5deg);
+    }
+`;
+
+const NurseAvatar = ({ isSpeaking, isListening }) => {
+    const [isBlinking, setIsBlinking] = useState(false);
+
+    useEffect(() => {
+        const blinkInterval = setInterval(() => {
+            setIsBlinking(true);
+            setTimeout(() => setIsBlinking(false), 200);
+        }, 3000);
+
+        return () => clearInterval(blinkInterval);
+    }, []);
+
+    return (
+        <NurseAvatarStyled isSpeaking={isSpeaking} isListening={isListening}>
+            <div className="nurse-container">
+                <div className="nurse-image">
+                    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                        {/* Hair */}
+                        <path className="hair" d="M60 80C60 50 90 30 100 30C110 30 140 50 140 80C140 90 135 100 130 105C125 110 120 115 100 115C80 115 75 110 70 105C65 100 60 90 60 80Z" fill="#2C3E50"/>
+                        
+                        {/* Face */}
+                        <circle className="face" cx="100" cy="80" r="30" fill="#FFE5D9"/>
+                        
+                        {/* Eyes */}
+                        <g className={`eyes ${isBlinking ? 'blinking' : ''}`}>
+                            <circle cx="90" cy="75" r="3" fill="#2D3436"/>
+                            <circle cx="110" cy="75" r="3" fill="#2D3436"/>
+                            {/* Eye shine */}
+                            <circle cx="91" cy="74" r="1" fill="#FFFFFF"/>
+                            <circle cx="111" cy="74" r="1" fill="#FFFFFF"/>
+                            {/* Eyelashes */}
+                            <path d="M87 72L85 70M93 72L95 70" stroke="#2D3436" strokeWidth="1"/>
+                            <path d="M107 72L105 70M113 72L115 70" stroke="#2D3436" strokeWidth="1"/>
+                        </g>
+                        
+                        {/* Beard */}
+                        <path className="beard" d="M85 95C85 95 95 110 105 110C115 110 115 95 115 95" fill="#2C3E50"/>
+                        
+                        {/* Mouth */}
+                        <path className={`mouth ${isSpeaking ? 'speaking' : ''}`} d="M95 90Q100 95 105 90" stroke="#2D3436" fill="none" strokeWidth="2" strokeLinecap="round"/>
+                        
+                        {/* Nurse Cap */}
+                        <path className="cap" d="M70 60C70 50 80 40 100 40C120 40 130 50 130 60C130 65 125 70 100 70C75 70 70 65 70 60Z" fill="#FFFFFF"/>
+                        <path className="cap-cross" d="M85 55H115" stroke="#FF0000" strokeWidth="3"/>
+                        <circle className="cap-dot" cx="100" cy="55" r="5" fill="#FF0000"/>
+                        
+                        {/* Uniform */}
+                        <path className="uniform" d="M70 105C70 105 80 120 100 120C120 120 130 105 130 105L140 150H60L70 105Z" fill="#FFFFFF"/>
+                        <path className="uniform-stripe" d="M85 105L90 150H110L115 105" fill="#FF0000"/>
+                        
+                        {/* Collar */}
+                        <path className="collar" d="M85 105C85 105 95 110 100 110C105 110 115 105 115 105" stroke="#FF0000" strokeWidth="3"/>
+                    </svg>
+                </div>
+                {isListening && (
+                    <div className="listening-indicator">
+                        <div className="pulse" />
+                    </div>
+                )}
+                {isSpeaking && (
+                    <div className="speaking-indicator">
+                        <div className="wave" />
+                        <div className="wave" />
+                        <div className="wave" />
+                    </div>
+                )}
+            </div>
+        </NurseAvatarStyled>
+    );
+};
+
 const NurseAvatarStyled = styled.div`
     width: 100%;
     height: 100%;
@@ -124,8 +143,9 @@ const NurseAvatarStyled = styled.div`
         animation: ${breathe} 3s ease-in-out infinite;
         transition: transform 0.3s ease;
 
-        ${props => props.isListening && `
+        ${props => props.isListening && css`
             transform: scale(1.05);
+            animation: ${nod} 2s ease-in-out infinite;
         `}
     }
 
@@ -142,13 +162,26 @@ const NurseAvatarStyled = styled.div`
 
         .eyes {
             animation: ${blink} 4s infinite;
+            
+            &.blinking {
+                animation: ${blink} 0.2s ease-in-out;
+            }
         }
 
         .mouth {
             transform-origin: center;
             transition: all 0.3s ease;
-            ${props => props.isSpeaking && `
-                d: path('M95 90Q100 98 105 90');
+            
+            &.speaking {
+                animation: ${wave} 0.5s ease-in-out infinite;
+            }
+        }
+
+        .cap {
+            transition: transform 0.3s ease;
+            
+            ${props => props.isSpeaking && css`
+                transform: translateY(-2px);
             `}
         }
     }
