@@ -25,15 +25,43 @@ const AppContainer = styled.div`
   }
 `;
 
+const LoadingContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #f8f9fa;
+`;
+
 const ProtectedRoute = ({ children }) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <LoadingContainer>
+        <div>Loading...</div>
+      </LoadingContainer>
+    );
+  }
+
   if (!user) {
     return <Navigate to="/login" replace />;
   }
+
   return children;
 };
 
 const AppRoutes = () => {
+  const { loading } = useAuth();
+
+  if (loading) {
+    return (
+      <LoadingContainer>
+        <div>Loading...</div>
+      </LoadingContainer>
+    );
+  }
+
   return (
     <AppContainer>
       <Navbar />
