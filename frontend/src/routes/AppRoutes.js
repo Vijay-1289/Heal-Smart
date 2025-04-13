@@ -5,7 +5,6 @@ import Home from '../Components/Home/Home';
 import Login from '../Components/Auth/Login';
 import Register from '../Components/Auth/Register';
 import PatientDashboard from '../Components/Dashboard/PatientDashboard';
-import DoctorDashboard from '../Components/Dashboard/DoctorDashboard';
 import Medicine from '../Components/Medicine/Medicine';
 import AINurse from '../Components/AINurse/AINurse';
 import MindBot from '../Components/MindBot/MindBot';
@@ -83,11 +82,6 @@ const AppRoutes = () => {
         <Route path="/nearby-hospitals" element={
           <ProtectedRoute>
             <NearbyHospitals />
-          </ProtectedRoute>
-        } />
-        <Route path="/doctor-dashboard" element={
-          <ProtectedRoute>
-            <DoctorDashboard />
           </ProtectedRoute>
         } />
         <Route path="*" element={<Navigate to="/" replace />} />
