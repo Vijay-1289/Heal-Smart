@@ -27,6 +27,8 @@ import Register from './Components/Auth/Register';
 import Dashboard from './Components/Dashboard/Dashboard';
 import Medicine from './Components/Medicine/Medicine';
 import Navbar from './Components/Navbar/Navbar';
+import { BrowserRouter as Router } from 'react-router-dom';
+import AppRoutes from './routes/AppRoutes';
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
@@ -49,87 +51,26 @@ const AppContainer = styled.div`
 
 function App() {
     return (
-        <ThemeProvider theme={theme}>
-            <GlobalStyle />
-            <AuthProvider>
-                <ContextProvider>
-                    <AppContainer>
-                        <Navbar />
-                        <Routes>
-                            {/* Public Routes */}
-                            <Route path="/" element={<Home />} />
-                            <Route path="/login" element={<Login />} />
-                            <Route path="/register" element={<Register />} />
-                            
-                            {/* Protected Routes */}
-                            <Route path="/dashboard" element={
-                                <ProtectedRoute>
-                                    <PatientDashboard />
-                                </ProtectedRoute>
-                            } />
-                            <Route path="/medicine" element={
-                                <ProtectedRoute>
-                                    <Medicine />
-                                </ProtectedRoute>
-                            } />
-                            <Route path="/ai-nurse" element={
-                                <ProtectedRoute>
-                                    <AINurse />
-                                </ProtectedRoute>
-                            } />
-                            <Route path="/mindbot" element={
-                                <ProtectedRoute>
-                                    <MindBot />
-                                </ProtectedRoute>
-                            } />
-                            <Route path="/ainurse" element={
-                                <ProtectedRoute>
-                                    <AINurse />
-                                </ProtectedRoute>
-                            } />
-                            <Route path="/mental-wellness" element={
-                                <ProtectedRoute>
-                                    <MentalWellness />
-                                </ProtectedRoute>
-                            } />
-                            <Route path="/consult-doctor" element={
-                                <ProtectedRoute>
-                                    <ConsultDoctor />
-                                </ProtectedRoute>
-                            } />
-                            <Route path="/doctor-details" element={
-                                <ProtectedRoute>
-                                    <DoctorDetails />
-                                </ProtectedRoute>
-                            } />
-                            <Route path="/nearby-hospitals" element={
-                                <ProtectedRoute>
-                                    <NearbyHospitals />
-                                </ProtectedRoute>
-                            } />
-                            <Route path="/doctor-dashboard" element={
-                                <ProtectedRoute>
-                                    <DoctorDashboard />
-                                </ProtectedRoute>
-                            } />
-                            <Route path="*" element={<Navigate to="/" replace />} />
-                        </Routes>
-                        <ToastContainer
-                            position="top-right"
-                            autoClose={5000}
-                            hideProgressBar={false}
-                            newestOnTop={false}
-                            closeOnClick
-                            rtl={false}
-                            pauseOnFocusLoss
-                            draggable
-                            pauseOnHover
-                            theme="light"
-                        />
-                    </AppContainer>
-                </ContextProvider>
-            </AuthProvider>
-        </ThemeProvider>
+        <Router>
+            <ThemeProvider theme={theme}>
+                <AuthProvider>
+                    <GlobalStyle />
+                    <AppRoutes />
+                    <ToastContainer
+                        position="top-right"
+                        autoClose={3000}
+                        hideProgressBar={false}
+                        newestOnTop={false}
+                        closeOnClick
+                        rtl={false}
+                        pauseOnFocusLoss
+                        draggable
+                        pauseOnHover
+                        theme="light"
+                    />
+                </AuthProvider>
+            </ThemeProvider>
+        </Router>
     );
 }
 
