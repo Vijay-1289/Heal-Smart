@@ -1,7 +1,28 @@
 services:
   - type: web
+    name: heal-smart-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        value: 246049626035-uhst0uqgq7p7nt84f6idr1171nif77b8.apps.googleusercontent.com
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: JWT_SECRET
+        value: heal-smart-jwt-secret-key-2024
+      - key: GOOGLE_AI_KEY
+        value: AIzaSyANSiPoBX4gzgk9JyNqF_GUjt4ZzNyvHgw
+
+  - type: web
     name: heal-smart-frontend
     env: static
+    rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: ./build
     envVars:
