@@ -37,18 +37,22 @@ const MindBotStyled = styled.div`
 
         &.user {
             align-self: flex-end;
-            background: rgba(255, 255, 255, 0.9);
-            color: #333;
+            color: #4a90e2;
+            background: rgba(74, 144, 226, 0.1);
+            border: 1px solid rgba(74, 144, 226, 0.2);
         }
 
         &.bot {
             align-self: flex-start;
-            background: rgba(255, 255, 255, 0.9);
             color: #333;
+            background: rgba(147, 51, 234, 0.1);
+            border: 1px solid rgba(147, 51, 234, 0.2);
 
             .greeting {
                 font-size: 2.5rem;
                 margin-bottom: 1rem;
+                background: none;
+                border: none;
                 
                 .hi {
                     color: #4a90e2;
@@ -63,10 +67,27 @@ const MindBotStyled = styled.div`
                 font-size: 2rem;
                 color: #9e9e9e;
                 margin-bottom: 1rem;
+                background: none;
+                border: none;
             }
 
             .structured-response {
                 white-space: pre-line;
+
+                h3 {
+                    color: #9333ea;
+                    margin: 1rem 0 0.5rem 0;
+                    font-size: 1.2rem;
+                }
+
+                ul, ol {
+                    margin: 0.5rem 0;
+                    padding-left: 1.5rem;
+                }
+
+                li {
+                    margin: 0.25rem 0;
+                }
             }
         }
     }
@@ -83,9 +104,11 @@ const MindBotStyled = styled.div`
             border: none;
             border-radius: 100px;
             font-size: 1rem;
-            background: rgba(255, 255, 255, 0.9);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(147, 51, 234, 0.2);
             color: #333;
+            transition: all 0.3s ease;
 
             &::placeholder {
                 color: #999;
@@ -93,7 +116,9 @@ const MindBotStyled = styled.div`
 
             &:focus {
                 outline: none;
-                box-shadow: 0 2px 15px rgba(0, 0, 0, 0.15);
+                background: rgba(255, 255, 255, 0.2);
+                border-color: rgba(147, 51, 234, 0.4);
+                box-shadow: 0 2px 15px rgba(147, 51, 234, 0.1);
             }
         }
 
@@ -164,37 +189,15 @@ function MindBot() {
         }
     }, [messages]);
 
-    const getMockDiseasePrompt = (userInput) => {
-        return `You are a mental health professional assistant. The user says: "${userInput}". 
-        Please provide a structured response following this exact format:
-
-        COPING STRATEGIES:
-        1. [First strategy]
-        2. [Second strategy]
-        3. [Third strategy]
-
-        MEDICATIONS (if applicable):
-        - [List medications with exact dosages]
-        - Maximum duration: [specify days/weeks]
-        - Important warnings: [list key warnings]
-
-        LIFESTYLE CHANGES:
-        - [First change]
-        - [Second change]
-        - [Third change]
-
-        WHEN TO SEEK EMERGENCY HELP:
-        - [First emergency sign]
-        - [Second emergency sign]
-        - [Third emergency sign]
-
-        IMPORTANT NOTES:
-        - Always consult a mental health professional
-        - Do not exceed recommended dosages
-        - Monitor for side effects
-        - Follow up with your therapist if symptoms persist
-
-        Keep each section concise and specific. Only include relevant information based on the user's condition.`;
+    const formatResponse = (text) => {
+        const sections = text.split('\n\n');
+        return sections.map(section => {
+            if (section.includes(':')) {
+                const [title, ...content] = section.split(':');
+                return `<h3>${title.trim()}</h3>${content.join(':').trim()}`;
+            }
+            return section;
+        }).join('\n\n');
     };
 
     const handleSend = async () => {
@@ -206,11 +209,33 @@ function MindBot() {
         setLoading(true);
 
         try {
-            const prompt = getMockDiseasePrompt(userMessage);
+            const prompt = `You are a mental health professional assistant. The user says: "${userMessage}". 
+            Please provide a structured response following this exact format:
+
+            COPING STRATEGIES:
+            1. [First strategy]
+            2. [Second strategy]
+            3. [Third strategy]
+
+            LIFESTYLE CHANGES:
+            - [First change]
+            - [Second change]
+            - [Third change]
+
+            WHEN TO SEEK HELP:
+            - [First sign]
+            - [Second sign]
+            - [Third sign]
+
+            IMPORTANT NOTES:
+            - Always consult a mental health professional
+            - Practice self-care regularly
+            - Reach out to loved ones for support`;
+
             const response = await generateResponse(prompt);
             
             setMessages(prev => [...prev, { 
-                text: response,
+                text: formatResponse(response),
                 sender: 'bot',
                 isStructured: true
             }]);
@@ -240,7 +265,9 @@ function MindBot() {
             } else if (message.isStructured) {
                 return (
                     <div key={index} className={`message ${message.sender}`}>
-                        <div className="structured-response">{message.text}</div>
+                        <div className="structured-response" 
+                            dangerouslySetInnerHTML={{ __html: message.text }}>
+                        </div>
                     </div>
                 );
             }
